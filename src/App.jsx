@@ -34,6 +34,8 @@ const opportunities = [
 function App() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
+
+      {/* Header */}
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           <h1 className="text-xl font-semibold">Nexus</h1>
@@ -42,9 +44,11 @@ function App() {
             <a href="#" className="text-gray-900">
               Discover
             </a>
+
             <a href="#" className="hover:text-gray-900">
               Squads
             </a>
+
             <a href="#" className="hover:text-gray-900">
               Profile
             </a>
@@ -52,7 +56,19 @@ function App() {
         </div>
       </header>
 
+      {/* Main */}
       <main className="mx-auto max-w-7xl px-6 py-10">
+
+        {/* Search */}
+        <div className="mb-10">
+          <input
+            type="text"
+            placeholder="Search opportunities, skills, or interests..."
+            className="w-full rounded-xl border border-gray-300 bg-white px-5 py-4 text-sm shadow-sm outline-none focus:border-gray-500"
+          />
+        </div>
+
+        {/* Introduction */}
         <section className="mb-8">
           <p className="mb-2 text-sm font-medium text-gray-500">
             Opportunity Discovery
@@ -68,6 +84,7 @@ function App() {
           </p>
         </section>
 
+        {/* Filters */}
         <section className="mb-8 flex flex-wrap gap-3">
           <button className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm">
             Beginner-Friendly
@@ -86,6 +103,7 @@ function App() {
           </button>
         </section>
 
+        {/* Opportunity Cards */}
         <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {opportunities.map((opportunity) => (
             <article
@@ -102,7 +120,9 @@ function App() {
                 </div>
               )}
 
-              <p className="text-sm text-gray-500">{opportunity.type}</p>
+              <p className="text-sm text-gray-500">
+                {opportunity.type}
+              </p>
 
               <h3 className="mt-1 text-lg font-semibold">
                 {opportunity.title}
