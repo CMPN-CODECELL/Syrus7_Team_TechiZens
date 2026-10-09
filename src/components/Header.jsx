@@ -35,8 +35,9 @@ export default function Header({ page, onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate("discover")}
-          className="text-xl font-semibold tracking-tight"
+          className="flex items-center gap-2 text-xl font-semibold tracking-tight"
         >
+          <img src="/logo.png" alt="" className="size-8" />
           Nexus
         </button>
 

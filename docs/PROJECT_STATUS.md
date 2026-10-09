@@ -23,34 +23,42 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 
 ## Start here (for a new chat or a new teammate)
 
-1. Read AGENTS.md (rules and POC), this file, CONTRIBUTING.md.
+1. Read AGENTS.md (rules and POC), this file, CONTRIBUTING.md, and [SUPABASE_AUDIT.md](SUPABASE_AUDIT.md) (database plan).
 2. Frontend dev: build the next item in "Remaining (frontend)" below, in order.
 3. Do not change `src/api/*` or the data shapes without telling the backend dev.
 4. Before every push: `npm run lint` and `npm run build`. Update this file when you finish something.
+5. Setup on a new computer: `git clone`, `npm install`, then create `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (see `.env.example`; ask the team, never commit it). Without it the app runs in offline demo mode (fake "Demo Student" login, all mock data).
+
+## Repositories (decided 2026-10-09)
+
+- **Personal repo (main working repo, `origin`):** `https://github.com/JasneevKalra/Syrus-Team-_TechiZens`
+- **Official hackathon repo (`official`):** `https://github.com/CMPN-CODECELL/Syrus7_Team_TechiZens`. The organizers' email asks that all development ends up here ("migrate your codebase and commits"). All teammates were added as Maintain. The code and history were copied there (all branches up to commit `7eee8f4`).
+- The user chose **not** to make the official repo the default yet. Until they do, push to both after each piece of work: `git push origin main` and `git push official main`. To switch fully later: `git remote rename origin old-origin`, `git remote rename official origin`, `git push -u origin main`; the teammate then runs `git remote set-url origin <official url>`. Do this well before the submission deadline.
+- Nothing is pushed to either repo unless the user says so.
 
 ## Where things stand (2026-10-09)
 
-- **Every POC feature has a frontend**, running on mock data in the browser. The app is fully demo-able without a backend.
-- **The backend is the main risk.** The backend dev has not finished their first piece of work (Google sign-in and profile saving).
-  Because every backend call is one small file in `src/api/`, they can connect **one file at a time**; anything not connected keeps working on mock data.
-  Priority for a real demo: 1) `api/auth.js` (real Google login + saved profile), 2) `api/opportunities.js` (real opportunities). The other swap points can stay mock.
+- **Every POC feature has a frontend.** Login, profile and opportunities are **live on Supabase** (real Google sign-in, profile saved in the `profiles` table, opportunities from the database). Everything else still runs on mock data kept in the browser.
+- **The database for the rest is built and applied.** Migrations `0006` to `0016` were pasted into the team's Supabase project on 2026-10-09 (tables, privacy rules, seed data; tested on a local Postgres engine). The app does **not read them yet**: the `src/api` files below are still the mock versions. Rewiring them is the next backend job; the exact query for each function is in [SUPABASE_AUDIT.md](SUPABASE_AUDIT.md). Rollback: `supabase/rollback-0007-to-0016.sql`. Offline mock mode any time: rename `.env.local` and restart `npm run dev`.
+- Because every backend call is one small file in `src/api/`, they can be connected **one file at a time**; anything not connected keeps working on mock data.
 - The latest commit on `main` is the source of truth; run `git log --oneline -5` to see it.
 
-**The swap points (each is the only place that talks to a backend; all are mock today):**
+**The swap points (each is the only place that talks to a backend):**
 
-| File | What it does | Mock data it uses (delete when real) |
-|---|---|---|
-| `api/auth.js` | login, logout, saving the profile | localStorage |
-| `api/opportunities.js` | the list of opportunities | `data/mockOpportunities.js` |
-| `api/saved.js` | saved opportunities | localStorage |
-| `api/alerts.js` | Change Sentinel alerts | `data/mockAlerts.js` |
-| `api/connections.js` | feed posts, likes, comments | `data/mockConnectionPosts.js`, `data/mockComments.js` |
-| `api/people.js` | connections, profiles of others, suggestions, invitations | `data/mockPeople.js` |
-| `api/squads.js` | Squad Hub opt-ins, matches, teams, requests | `data/mockSquads.js` |
-| `api/search.js` | conversational AI search | `lib/mockSearchParser.js` |
+| File | What it does | Status | Mock data it uses (delete when real) |
+|---|---|---|---|
+| `api/auth.js` | login, logout, saving the profile | **Real (Supabase)** | none (localStorage only without keys) |
+| `api/opportunities.js` | the list of opportunities | **Real (Supabase)**, falls back to mock if the call fails | `data/mockOpportunities.js` |
+| `api/saved.js` | saved opportunities | Mock; table `saved_opportunities` ready | localStorage |
+| `api/alerts.js` | Change Sentinel alerts | Mock; `my_alerts` view ready | `data/mockAlerts.js` |
+| `api/connections.js` | feed posts, likes, comments | Mock; `feed_posts`, `post_comments` ready | `data/mockConnectionPosts.js`, `data/mockComments.js` |
+| `api/people.js` | connections, profiles of others, suggestions, invitations | Mock; `connections`, `public_profiles` ready | `data/mockPeople.js` |
+| `api/squads.js` | Squad Hub opt-ins, matches, teams, requests | Mock; squad tables and `get_contact` ready | `data/mockSquads.js` |
+| `api/search.js` | conversational AI search | Mock; needs an LLM Edge Function (not SQL) | `lib/mockSearchParser.js` |
 
-**How to try the demo:** `npm install`, `npm run dev`, open http://localhost:5173, click "Sign in with Google" (demo), finish the 5-step setup.
-To start fresh, clear this site's localStorage in the browser. In the demo, other students "agree" to Squad Hub requests about 4 seconds after being asked.
+**What is still not real vs the POC** (details in the audit): no ingestion pipeline (duplicate merging, auto-closing, source conflict checks; data is hand-seeded), AI search is rule-based, Squad Hub / Connections / saved / alerts are browser-only until rewired, no realtime subscriptions in the screens, profile has no college field. Suggested order: rewire `saved.js` + `alerts.js`, then Connections and people, then Squad Hub, then an LLM Edge Function for search, then a small ingestion job.
+
+**How to try the demo:** `npm install`, `npm run dev`, open http://localhost:5173. With `.env.local` set you get real Google sign-in; without it, "Sign in with Google" signs in as a demo student. To start fresh, clear this site's localStorage in the browser. In the demo, other students "agree" to Squad Hub requests about 4 seconds after being asked.
 
 ## Done (all on `main`)
 
@@ -69,6 +77,7 @@ To start fresh, clear this site's localStorage in the browser. In the demo, othe
 - **Squad Hub** (POC 6 and 7), replacing the placeholder. Pick an opportunity on the Squad Hub page, or press **Find teammates** / **Connect with others** on an opportunity's page. Opting in is voluntary: for team opportunities (hackathons, competitions) the student chooses **Leader** or **Solo seeker** and their **weekly hours** (3, 6, 10, 15 or 20; this is where weekly hours returned). **Leaders** see their top candidates (up to 5) and **seekers** see their top 5 best-fit squads, ranked by **skill fit** (60%) and **schedule fit** (40%) with the reason shown. **Connect mode** (workshops, courses, internships) shows the top 5 people with shared interests and skills. Asking someone is **double opt-in**: it stays **Pending** until they agree, and **contacts appear only for people who agreed with you**. Your team box shows members; when the team is **full** you get **Copy Roster** (a text roster) and **Apply on organizer's website** (Nexus never applies for you). Mock data in `src/data/mockSquads.js` through `src/api/squads.js`; in the demo, people "agree" 4 seconds after being asked, except two who never answer.
 - **Conversational AI search (mock)** on the Discover page. Type a plain-English request (for example "free online coding workshops this weekend") and press Enter or **Ask AI**. A rule-based mock (`src/lib/mockSearchParser.js`, behind `src/api/search.js`) picks out cost, format, type, topic, level, dates, city, team size, eligibility and leftover keywords; shows chips for what it understood; ranks the matches and gives a one-line reason on each card. If nothing matches everything it ignores the least important parts one at a time (date first) and says so (ignored parts are struck through). Typing without Enter is still the live keyword search, and "No keyword matches" offers **Ask AI instead**. Choosing a type card or clearing returns to the normal feed.
 - **Smart ingestion display** (POC 1): **Closed** events and **missing-details** flags. An opportunity is Closed when its deadline (or end date, if there is no deadline) is before today. Closed ones are **left out of the Discover feed, the AI search and the Squad Hub list**, and still open from the Saved list, posts and profile activity, where they show **Closed 30 Sep** in red; their detail page has a "This opportunity is closed" banner, a **Closed** badge and a disabled **Applications closed** button (the source link stays so a student can check if the deadline was extended). A detail the organizer never listed (deadline, fee, location, format, theme, registration link) is `null` in the data; cards and the detail page show **Not listed**, add the **Check details** flag, and the detail page says exactly what is missing. An unknown fee is never treated as free or low-cost, and gets half credit for budget in the relevance score. The logic lives in `src/lib/ingestion.js` (`isClosed`, `getMissingDetails`, `needsCheck`) and the one-line "Deadline / Closed" text in `src/components/DeadlineLine.jsx`. Duplicate merging is backend work.
+- **Nexus logo** (from the user's image) in the browser tab (`public/favicon.png`), the header and the login page (`public/logo.png`). The page title is "Nexus". *(Added 2026-10-09; check `git log` to see whether it is committed.)*
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 - Supabase client configured (`src/lib/supabase.js`) using `@supabase/supabase-js`
 - Google OAuth login and profile syncing implemented in `src/api/auth.js` and `src/context/UserProvider.jsx` (merged into `main`)

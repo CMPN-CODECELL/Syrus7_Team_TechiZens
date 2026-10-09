@@ -40,7 +40,10 @@ export default function LoginPage() {
       <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16">
         {/* Intro */}
         <section>
-          <p className="text-xl font-semibold tracking-tight">Nexus</p>
+          <p className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
+            <img src="/logo.png" alt="" className="size-12" />
+            Nexus
+          </p>
           <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">
             Find what's worth your time.
           </h1>
