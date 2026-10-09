@@ -3,9 +3,9 @@
 //
 // Fetches opportunities from Supabase with organizer relations.
 // Preserves the exact Opportunity shape documented in CONTRIBUTING.md.
+// There is no mock fallback: without Supabase (or when the query fails) the list is empty.
 // ============================================================================
 
-import { mockOpportunities } from "@/data/mockOpportunities"
 import { supabase } from "@/lib/supabase"
 
 const isConfigured = Boolean(
@@ -15,7 +15,7 @@ const isConfigured = Boolean(
 // Returns a list of opportunities. Always async.
 export async function getOpportunities() {
   if (!isConfigured) {
-    return mockOpportunities
+    return []
   }
 
   try {
@@ -25,11 +25,11 @@ export async function getOpportunities() {
 
     if (error) {
       console.error("Error fetching opportunities from Supabase:", error.message)
-      return mockOpportunities
+      return []
     }
 
     if (!data || data.length === 0) {
-      return mockOpportunities
+      return []
     }
 
     // Map database columns to the exact Opportunity data shape in CONTRIBUTING.md.
@@ -71,6 +71,6 @@ export async function getOpportunities() {
     }))
   } catch (err) {
     console.error("Error in getOpportunities:", err)
-    return mockOpportunities
+    return []
   }
 }
