@@ -100,6 +100,12 @@ If a shape needs to change, tell the other person first, because screens depend 
 
 Branch name ideas: `feature/supabase-auth`, `feature/supabase-opportunities`, `feature/opportunity-detail-page`.
 
+## Database changes (SQL)
+
+Every SQL change is saved as a **numbered file** in `supabase/migrations/` (for example `0003_create_opportunities.sql`).
+Never edit a file that has already been run: add a new file with the next number.
+Full rules: [supabase/README.md](supabase/README.md).
+
 ## Secrets
 
 - Put the Supabase URL and the **anon** key in `.env.local` (copy `.env.example`). It is ignored by git.
