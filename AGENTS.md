@@ -138,13 +138,10 @@ Each result should explain its relevance.
 
 ---
 
-### 5. Participation Cheat Sheet
+### 5. Participation Cheat Sheet: REMOVED
 
-Each opportunity must have an accessible summary containing:
-
-- Prerequisites/setup
-- Key milestones
-- Deliverable checklist
+Removed by the user (product owner) on 2026-10-09. Do not build it. It was replaced by the
+Connections Feed (see Feature 9 below).
 
 ---
 
@@ -194,6 +191,18 @@ The interface must support in-app alerts explaining exactly what changed in:
 - Deadlines
 - Fees
 - Rules
+
+---
+
+### 9. Connections Feed (added by the user on 2026-10-09; not in the original POC)
+
+A LinkedIn-style timeline of activity posts from the students the user is connected to.
+
+- Post types: saved an opportunity, recommends an opportunity, looking for teammates, shared an update.
+- A post can embed an opportunity (opens its detail page). Posts can be liked.
+- It is a separate page from the Squad Hub (the Squad Hub is team matching around an opportunity).
+- Privacy still applies: no contact details in the feed (contacts only after double opt-in), and Nexus
+  never reads private LinkedIn information.
 
 ---
 
@@ -257,7 +266,8 @@ Summary:
 - Frontend runs locally with mock data (login is a demo, opportunities are fake).
 - Built: login page, 5-step onboarding, Discover feed with category cards and filters,
   opportunity cards with organizer logos, Profile page with editable interests.
-- Placeholder pages only: Cheat Sheets, Squad Hub, Alerts (Change Sentinel).
+- Also built: opportunity detail page, saved opportunities with Change Sentinel alerts, Connections feed.
+- Placeholder page only: Squad Hub.
 - Backend (Supabase and Google OAuth) is being built by a teammate behind `src/api/`.
 - Two people work in parallel: one on the frontend, one on Supabase and auth.
   See `CONTRIBUTING.md` for the file ownership split and git workflow.

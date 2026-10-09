@@ -17,6 +17,7 @@ The screens never talk to Supabase directly. They call two functions:
 - `src/api/opportunities.js`: `getOpportunities`
 - `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
 - `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
+- `src/api/connections.js`: `getConnectionPosts`, `toggleLike`
 
 Today these return fake data. **Backend dev:** replace the inside of each function with the Supabase
 version, but keep the **function names and the returned shapes** (below). Then the screens keep working
@@ -100,7 +101,32 @@ Suggested table: `saved_opportunities (user_id, opportunity_id)` with Row Level 
 `markAlertRead(alertId)` and `markAllAlertsRead()` return nothing.
 Real change detection (and an optional realtime listener) is backend work.
 
+**Connection post** (each item returned by `getConnectionPosts` in `src/api/connections.js`; examples in `src/data/mockConnectionPosts.js`)
+
+```js
+{
+  id,
+  author: { id, name, college, year },   // year = same numbers as the profile (-2 .. 5)
+  type,                                  // "saved" | "recommended" | "looking_for_team" | "update"
+  text,                                  // string or null
+  opportunityId,                         // the opportunity the post is about, or null
+  createdAt,                             // ISO date-time
+  likeCount,                             // total likes, including this student's
+  likedByMe,                             // boolean
+}
+```
+
+`getConnectionPosts()` returns posts from the student's connections only, newest first.
+`toggleLike(postId)` likes the post, or removes the like if already liked, and returns nothing.
+**Never include contact details** (email, phone, social links) in a post: contacts are only shared after double opt-in.
+Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_likes`, all with Row Level Security.
+
 ## Git workflow (the simple version)
+
+**Current agreement (hybrid):** the frontend dev works directly on `main` in small finished steps
+(`git pull` first; push only when `npm run lint` and `npm run build` pass). The backend dev works on a branch
+and merges `main` into it often. Neither person merges the backend branch into `main` without telling the other.
+The steps below are for working on a branch.
 
 1. Never work directly on `main`. Make your own branch:
    ```bash

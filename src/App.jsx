@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import Header from "@/components/Header"
 import { useUser } from "@/context/user-context"
 import AlertsPage from "@/pages/AlertsPage"
+import ConnectionsPage from "@/pages/ConnectionsPage"
 import ComingSoonPage from "@/pages/ComingSoonPage"
 import DiscoverPage from "@/pages/DiscoverPage"
 import LoginPage from "@/pages/LoginPage"
@@ -11,10 +12,6 @@ import ProfilePage from "@/pages/ProfilePage"
 
 // Features from the POC that are not built yet. Each gets its own menu entry.
 const COMING_SOON = {
-  cheatsheets: {
-    title: "Participation Cheat Sheet",
-    items: ["Prerequisites and setup", "Key milestones", "Deliverable checklist"],
-  },
   squads: {
     title: "Squad Hub",
     items: [
@@ -68,6 +65,7 @@ function App() {
         {/* A detail page can be opened from any screen; Back returns to that screen */}
         {openId && <OpportunityDetailPage opportunityId={openId} onBack={backFromDetail} />}
         {!openId && page === "alerts" && <AlertsPage onOpen={openOpportunity} />}
+        {!openId && page === "connections" && <ConnectionsPage onOpen={openOpportunity} />}
         {!openId && page === "profile" && <ProfilePage />}
         {comingSoon && <ComingSoonPage {...comingSoon} />}
       </main>

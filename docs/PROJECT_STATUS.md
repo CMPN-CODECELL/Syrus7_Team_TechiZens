@@ -9,83 +9,64 @@ Last updated: 2026-10-09
 
 | Lane | Owner | Files |
 |---|---|---|
-| Frontend (screens, design) | Frontend dev | `src/pages/*`, `src/components/*`, `src/lib/scoring.js` |
+| Frontend (screens, design) | Frontend dev | `src/pages/*`, `src/components/*`, `src/lib/*` |
 | Backend (Supabase, auth) | Backend dev | `src/api/*`, `src/context/UserProvider.jsx`, `src/lib/supabase.js`, `supabase/*`, database, `.env.local` |
 
 Workflow and data shapes: [CONTRIBUTING.md](../CONTRIBUTING.md). Feature list (the POC): [AGENTS.md](../AGENTS.md).
 SQL rules: [supabase/README.md](../supabase/README.md).
 
-Frontend progress: the detail page is built on branch `feature/opportunity-detail-page` (open a PR when ready).
-The backend dev has started on branch `feature/supabase-auth` (their own computer). The frontend dev is about to
-start on `feature/opportunity-detail-page`. Nobody works directly on `main`; changes come in through Pull Requests.
+**Workflow (hybrid):**
+- The frontend dev works directly on `main` in small, finished steps (only push when `npm run lint` and `npm run build` pass; always `git pull` first). A branch is used only for big or experimental features.
+- The backend dev works on a branch (`feature/supabase-auth`) because auth work can break login while half done.
+- **Neither person merges the backend branch into `main` without telling the other first.**
+- The backend dev should run `git merge main` into their branch regularly to pick up frontend changes.
 
 ## Start here (for a new chat or a new teammate)
 
 1. Read AGENTS.md (rules and POC), this file, CONTRIBUTING.md.
-2. Frontend dev: create a branch, then build the next item in "Remaining (frontend)" below, in order.
+2. Frontend dev: build the next item in "Remaining (frontend)" below, in order.
 3. Do not change `src/api/*` or the data shapes without telling the backend dev.
-4. Before every PR: `npm run lint` and `npm run build`. Update this file in the same PR.
+4. Before every push: `npm run lint` and `npm run build`. Update this file when you finish something.
 
-## Done
+## Done (all on `main`)
 
 - Login landing page with a demo "Sign in with Google" (no real auth yet)
 - 5-step gamified onboarding: interests, skills (with "I'm a beginner"), studies (Class 10th to Graduated), city (dropdown + detect my location), budget
 - Discover page: search, 5 category cards (Courses, Internships, Hackathons, Workshops, Competitions), the 4 POC filters, a ranked personalized feed
-- Opportunity cards: organizer logo and name, relevance %, Verified / Check details badge, Eligible / Not eligible with reason, aligned grid
+- Opportunity cards: organizer logo and name, relevance %, Verified / Check details badge, Eligible / Not eligible with reason, bookmark, aligned grid
 - Relevance and eligibility scoring with plain-language reasons (`src/lib/scoring.js`)
 - Profile page: interests, skills, beginner toggle, year, location, budget (edits update the feed everywhere)
 - 27 mock opportunities with real organizers (colleges, companies, startups, platforms)
-- Opportunity detail page (branch feature/opportunity-detail-page): all POC fields, relevance + eligibility with reasons, conflict warning banner, "Last verified" (flagged as possibly out of date after 14 days), source link, "Apply on organizer's website" handoff. Back keeps the search, filters and scroll position.
-- Save opportunities and Change Sentinel alerts (branch feature/saved-and-alerts, built on top of the detail-page branch): bookmark on cards, Save button on the detail page, Alerts page with in-app alerts (deadline / fee / rules, old to new value, mark read), Saved list, unread badge in the nav. Saved opportunities are the monitored ones. Frontend uses mock data through new src/api/saved.js and src/api/alerts.js.
+- Opportunity detail page: all POC fields, relevance + eligibility with reasons, conflict warning banner, "Last verified" (flagged as possibly out of date after 14 days), source link, "Apply on organizer's website" handoff, Save button. Back keeps the search, filters and scroll position.
+- Save opportunities and Change Sentinel alerts: Alerts page with in-app alerts (deadline / fee / rules, old to new value, mark read), Saved list, unread badge in the nav. Saved opportunities are the monitored ones. Mock data through `src/api/saved.js` and `src/api/alerts.js`.
+- **Connections feed** (new, replaces Cheat Sheets in the menu): a LinkedIn-style timeline of activity posts from connections (saved an opportunity, recommends one, looking for teammates, shared an update), with an embedded opportunity link and a Like button. Mock data through `src/api/connections.js`. No contact details are shown.
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 
 ## Remaining (frontend), in suggested order
 
-### 1. Opportunity detail page (DONE except Save and Cheat sheet, which come with items 2 and 3)
-Opens from the card's "View" button (currently does nothing). No router exists, so keep it simple: store the selected
-opportunity id in state in `App.jsx` and add a Back button.
-- Shows all POC fields: title, organizer, theme, description, format, location, fee, start/end dates, deadline, team size, level.
-- **Trust layer (POC 2):** source link (`sourceUrl`), "Last verified" (`lastVerified`, shown as a date and flagged if old),
-  warning banner when `verified` is false using the `warning` text. Data already has all three.
-- Relevance % with the reason, and Eligible / Not eligible with the reason.
-- **Handoff (POC 7):** an "Apply on organizer's website" button to `registrationUrl`. Nexus never applies for the student.
-- Save / Watch button (feeds item 2).
-- Cheat sheet section (item 3).
-
-### 2. Saved opportunities and Change Sentinel (POC 8): DONE on the frontend (mock data). Backend still to do
-- Save / unsave an opportunity; show saved ones somewhere (Alerts page or a Saved tab).
-- Alerts page (currently "Coming soon"): in-app alerts that say exactly what changed in **deadline, fee or rules**
-  (old value to new value, when). Use mock alerts for now. Unread badge on the Alerts nav item.
-- Needs new data shapes (agree with backend dev first): saved ids on the user, and an alert object
-  `{ id, opportunityId, field: "deadline" | "fee" | "rules", oldValue, newValue, changedAt, read }`.
-- Real change detection and realtime listeners are backend work. New api functions and shapes are documented in CONTRIBUTING.md; the backend dev replaces the mock bodies in src/api/saved.js and src/api/alerts.js and deletes src/data/mockAlerts.js when live.
-
-### 3. Participation Cheat Sheet (POC 5)
-Per opportunity: **prerequisites/setup**, **key milestones**, **deliverable checklist**.
-- Needs a new field on the opportunity shape, e.g. `cheatSheet: { prerequisites: [], milestones: [{ label, date }], deliverables: [] }`
-  (agree with backend dev first; add to mock data).
-- The "Cheat Sheets" nav page is a placeholder. OPEN QUESTION: should it list cheat sheets for saved opportunities, or all?
-
-### 4. Squad Hub (POC 6 and 7)
+### 1. Squad Hub (POC 6 and 7), currently a placeholder page
 - Student opts in voluntarily. Two modes: **leader** sees the top 3-5 opted-in candidates; **solo seeker** sees the top 5 best-fit squads.
 - Ranking by **skill fit** and **schedule fit**. This is where **weekly hours returns** (removed from onboarding on purpose).
 - Lightweight **Connect** mode for workshops.
 - **Privacy:** contact details revealed only after **double opt-in** (both sides agree).
 - When a team is full: **Copy Roster** button. Then apply on the organizer's website (no auto-apply, no private LinkedIn data).
-- Needs mock candidates/squads and new data shapes; real matching and connections are backend work.
+- Needs mock candidates/squads and new data shapes (agree with the backend dev first).
+- Squad Hub and Connections are separate pages (decision). "Looking for teammates" posts in Connections can link to Squad Hub later.
 
-### 5. Conversational AI search (POC 4)
+### 2. Conversational AI search (POC 4)
 - Today: disabled "Ask AI" button; search is keyword-only.
 - Frontend mock: a simple rule-based parser for queries like "free online coding workshops this weekend"
   (free, online, workshops, interest "coding", date "this weekend"), with each result explaining its relevance.
 - Real LLM search is backend work (edge function). Never put an LLM API key in the frontend.
 
-### 6. Smart ingestion display (POC 1)
+### 3. Smart ingestion display (POC 1)
 - Expired events shown as **Closed** (deadline in the past) and kept out of the main feed.
 - **Missing details flagged** (e.g. no deadline or fee) on cards and the detail page.
 - Duplicate merging is a backend job.
 
-### 7. Smaller items and polish
+### 4. Smaller items and polish
+- A separate **Saved** tab on the Alerts page (saved items are currently at the bottom of the Alerts page and hard to find).
+- Connections: optional "Share an update" box so the student can post (needs an api function and shape).
 - Stale or conflicting information should be visible on cards too (tooltip or small note using `warning`).
 - Decide how Not eligible items rank (currently ranked by relevance only, so they can appear near the top).
 - Accessibility pass (keyboard focus, labels, contrast), tablet-width check.
@@ -97,27 +78,31 @@ Per opportunity: **prerequisites/setup**, **key milestones**, **deliverable chec
 - Google OAuth through Supabase; real `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser` in `src/api/auth.js`.
 - Tables: profiles, organizers, opportunities (shapes in CONTRIBUTING.md), RLS so students see only their own profile, seed from `src/data/mockOpportunities.js`. All SQL as numbered files in `supabase/migrations/`.
 - Real `getOpportunities` in `src/api/opportunities.js`.
-- Now also needed: saved_opportunities and alerts tables behind src/api/saved.js and src/api/alerts.js (shapes in CONTRIBUTING.md).
-- Later: realtime alerts, squads/connections with double opt-in, ingestion (merge duplicates, close expired), AI search function.
-- Delete `src/data/mockOpportunities.js` once real data is live.
+- Tables behind `src/api/saved.js` and `src/api/alerts.js` (shapes in CONTRIBUTING.md).
+- Tables behind `src/api/connections.js`: connections, posts, likes (shape in CONTRIBUTING.md).
+- Later: realtime alerts, squads with double opt-in, ingestion (merge duplicates, close expired), AI search function.
+- Delete the mock files once real data is live: `mockOpportunities.js`, `mockAlerts.js`, `mockConnectionPosts.js`.
 
 ## Open questions for the product owner
 
-1. What should the "Cheat Sheets" nav page show (saved only, or all opportunities)?
-2. Squad Hub: how does a student choose leader vs solo seeker, and where is schedule fit entered (weekly hours? time slots?)?
-3. Should Not eligible opportunities be pushed down the feed?
-4. Detail page: full page (with Back button) or a side panel? Default plan: full page.
+1. Squad Hub: how does a student choose leader vs solo seeker, and where is schedule fit entered (weekly hours? time slots?)?
+2. Should Not eligible opportunities be pushed down the feed?
+3. Connections: should students be able to post their own updates, or only read their connections' activity?
 
 ## Decisions made (and why)
 
+- **Participation Cheat Sheet removed** (user decision, 2026-10-09). It was POC Feature 5. The menu item is gone and nothing was built for it. **Connections feed** was added instead (a timeline of activity posts from connections). AGENTS.md is updated to match.
+- **Connections and Squad Hub are separate pages.** Connections is general networking; Squad Hub is team matching around an opportunity.
 - **Weekly hours removed** from onboarding, the Profile page and relevance scoring. It will come back in the team-building (Squad Hub) section. Opportunities still carry `hoursPerWeek` for that.
 - **"Disqualified" is shown as "Not eligible"** (sounds better), and "Qualified" became "Eligible" to match. The reason is always shown for Not eligible.
 - **Relevance is shown only as a percentage** next to the Verified badge on the card (no progress bar).
 - **Ranking weights** (in `scoring.js`): interests 50, budget 20, skills 15, beginner-level fit 15. Beginners rank beginner-level opportunities higher.
 - **Year values:** a number from -2 (Class 10th) to 5 (Graduated), so eligibility is a simple comparison. Graduated users count as meeting any year requirement.
 - **Cards use a CSS subgrid** (5 rows) so sections line up across a row without wasting space. Do not put fixed heights back on titles.
+- **Save = monitor.** Saving an opportunity is what turns on Change Sentinel alerts for it (no separate "watch" switch).
+- **Detail page is a full page** with a Back button (not a side panel).
 - **UI style:** minimal and not text-heavy. The user disliked "overstuffed" screens; keep copy short.
-- **Mock data:** organizer names are real, but all events (titles, dates, fees, links) are invented. Not real listings. Logos load from a public favicon service (`google.com/s2/favicons`); IIT Bombay uses the Techfest logo because the institute's crest could not be found. To use your own logo, put it in `public/logos/` and set the organizer's `logo` to `/logos/name.png`.
+- **Mock data:** organizer names are real, but all events (titles, dates, fees, links) are invented. Not real listings. The people in Connections posts are invented too. Logos load from a public favicon service (`google.com/s2/favicons`); IIT Bombay uses the Techfest logo because the institute's crest could not be found. To use your own logo, put it in `public/logos/` and set the organizer's `logo` to `/logos/name.png`.
 - **Detect my location** picks the nearest listed city from the browser's coordinates. Nothing is sent to a server.
 - **Login is a demo.** It signs in as "Demo Student" and stores the profile in localStorage until Supabase is connected.
 - **All backend access goes through `src/api/*`.** Screens never import Supabase directly.
@@ -127,5 +112,6 @@ Per opportunity: **prerequisites/setup**, **key milestones**, **deliverable chec
 
 - The Supabase **service role** key must never be in this repo or the frontend. Only the anon key goes in `.env.local`.
 - `src/components/ui/*` is generated by shadcn. Add components with `npx shadcn@latest add <name>` instead of copying code in.
-- Run `npm run lint` and `npm run build` before every pull request.
+- Run `npm run lint` and `npm run build` before every push.
 - Data shapes are a contract between the two lanes. Change them only after telling the other developer.
+- Nexus never auto-applies to opportunities and never reads private LinkedIn data. Contacts are shared only after double opt-in.
