@@ -67,19 +67,19 @@ const THEME_TO_INTEREST = {
 // Theme names that say nothing about the topic. They are not used as the card's theme.
 const GENERIC_THEMES = new Set(["Beginner Friendly", "Open Ended"])
 
-function guessOrganizerType(name) {
+export function guessOrganizerType(name) {
   if (/univers|college|institute|school|polytechnic|academy|\biit\b|\bnit\b/i.test(name)) return "College"
   if (/devpost|\bmlh\b|major league hacking|hackerearth|unstop|devfolio/i.test(name)) return "Platform"
   return "Company"
 }
 
-const slug = (text) =>
+export const slug = (text) =>
   text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
 
-const cleanText = (text) => (text ? text.replace(/\s+/g, " ").replace(/[,\s]+$/, "").trim() : "")
+export const cleanText = (text) => (text ? text.replace(/\s+/g, " ").replace(/[,\s]+$/, "").trim() : "")
 
 // Returns { opportunity, organizer } or null when the hackathon should be skipped.
 // `now` is passed in so the result is the same for every item of one run.

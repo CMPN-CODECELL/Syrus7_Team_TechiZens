@@ -9,6 +9,8 @@ export function formatDate(isoDate, { year = false } = {}) {
 
 // "12 Dec - 14 Dec 2026", "12 Dec 2026" (one day), or "Self-paced".
 export function formatDateRange(startDate, endDate) {
+  // No start date but an end date (some scraped events): show when it ends instead of "Self-paced".
+  if (!startDate && endDate) return `Until ${formatDate(endDate, { year: true })}`
   if (!startDate) return "Self-paced"
   if (!endDate || endDate === startDate) return formatDate(startDate, { year: true })
   return `${formatDate(startDate)} - ${formatDate(endDate, { year: true })}`

@@ -4,7 +4,7 @@ Fetches real opportunities from the web, cleans them up and saves them to Supaba
 it keeps reading the `opportunities` table through `src/api/opportunities.js`.
 
 ```
-Devpost (public JSON) -> normalize.js -> dedupe.js -> save.js -> Supabase -> the app
+Devpost + Unstop (public JSON) -> normalize -> dedupe.js -> save.js -> Supabase -> the app
 ```
 
 ## One-time setup
@@ -20,6 +20,7 @@ Devpost (public JSON) -> normalize.js -> dedupe.js -> save.js -> Supabase -> the
 npm run ingest -- --dry-run    # fetch + clean up, print a summary, save nothing
 npm run ingest -- --pages=2    # quick test: only the first 2 pages
 npm run ingest                 # fetch and save everything
+npm run ingest -- --limit=100  # Unstop: up to 100 per type instead of the default 60
 ```
 
 Running it again is safe: rows are updated, not duplicated (`id` is `devpost-<Devpost id>`).
@@ -29,7 +30,10 @@ Running it again is safe: rows are updated, not duplicated (`id` is `devpost-<De
 | File | Job |
 |---|---|
 | `sources/devpost.js` | Reads `devpost.com/api/hackathons` (open + upcoming), one page at a time with a pause |
-| `normalize.js` | Raw Devpost item -> `organizers` + `opportunities` rows |
+| `sources/unstop.js` | Reads Unstop's public search API (`/api/public/`, allowed by its robots.txt): hackathons, competitions, quizzes, workshops, internships (60 each by default) |
+| `normalize.js` | Raw Devpost item -> `organizers` + `opportunities` rows (also shared helpers) |
+| `normalizeUnstop.js` | Same for Unstop. Registration end = deadline; `isPaid` false = free, paid = fee unknown (null); team size, skills, city and logo come from Unstop |
+| `interests.js` | Picks app interests from text, using the same keyword list as the relevance score |
 | `dedupe.js` | Merges the same event listed twice; flags a deadline conflict (Trust Layer warning) |
 | `save.js` | Upserts rows; if a deadline or fee changed, adds a row to `opportunity_changes` (Change Sentinel) |
 | `index.js` | Runs the steps in order and prints a summary |
@@ -38,7 +42,11 @@ Running it again is safe: rows are updated, not duplicated (`id` is `devpost-<De
 
 - A detail Devpost does not give is `null`, never `""` or `0`. The app then shows "Not listed" and "Check details".
   Exception (product owner decision, 2026-10-09): Devpost gives no entry fee, so `fee` is set to 0 (Free) for Devpost rows.
-- Invite-only hackathons are skipped.
+- Invite-only Devpost hackathons are skipped. Unstop jobs and scholarships are not read (not learning opportunities).
+- Unstop does not give the event start date, only the registration window and an end date. `start_date` stays null and the app
+  shows "Until <end date>". Level is guessed from the title (beginner/basic/intro, advanced) and is Intermediate otherwise.
+- Duplicates: same title + same kind + compatible start month. Within one source the organizer must match too (two companies can
+  post an "HR Internship"). The same Unstop event listed under two kinds is read once.
 - Interests come from Devpost themes (mapping in `normalize.js`); `level` is Beginner only if the theme "Beginner Friendly"
   is present, otherwise Intermediate. Skills are left empty (Devpost does not list them).
 - "Closed" is not stored: the app works it out from the deadline.

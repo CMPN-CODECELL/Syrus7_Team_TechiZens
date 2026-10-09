@@ -50,11 +50,11 @@ const LEVEL_FACTOR_FOR_BEGINNERS = { Beginner: 1, Intermediate: 0.85, Advanced: 
 // Words that suggest an interest. Used only to read the title and theme of opportunities that
 // do not list their interests (most scraped ones). Words of 5+ letters match as a word start
 // ("robot" finds "robotics"); shorter ones must match the whole word ("ai" must not find "maintain").
-const INTEREST_KEYWORDS = {
+export const INTEREST_KEYWORDS = {
   "Web Development": ["web", "website", "frontend", "backend", "full stack", "fullstack", "react", "html", "css"],
   "AI & Machine Learning": ["ai", "ml", "artificial intelligence", "machine learning", "deep learning", "llm", "gpt", "generative", "genai", "neural", "nlp"],
   "Data Science": ["data", "analytics", "statistics", "sql", "visualization"],
-  Design: ["design", "ux", "ui", "figma", "creative"],
+  Design: ["design", "ux", "ui", "figma"],
   Cybersecurity: ["security", "cyber", "hacking", "ctf", "privacy", "encryption"],
   "Mobile Apps": ["mobile", "android", "ios", "flutter", "react native"],
   "Cloud & DevOps": ["cloud", "devops", "aws", "azure", "kubernetes", "docker", "serverless"],
@@ -68,7 +68,7 @@ const INTEREST_KEYWORDS = {
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 // True when `word` appears in `text` as a whole word, or (for 5+ letters) as the start of a word.
-function hasWord(text, word) {
+export function hasWord(text, word) {
   const end = word.length >= 5 ? "" : "(?![a-z0-9])"
   return new RegExp(`(?<![a-z0-9])${escapeRegExp(word.toLowerCase())}${end}`).test(text.toLowerCase())
 }
