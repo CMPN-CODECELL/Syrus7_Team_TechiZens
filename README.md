@@ -7,7 +7,9 @@ Students today search LinkedIn, event sites and college notice boards by hand, a
 duplicated, and often miss the deadline, eligibility or location. Nexus collects opportunities from real sources,
 cleans them up, shows **how trustworthy** each one is, explains **why it fits you**, and helps you **find teammates**.
 
-> **For judges:** start with [Run it in 2 minutes](#run-it-in-2-minutes), then follow [A 5-minute tour](#a-5-minute-tour-what-to-click).
+> **Live site:** https://nexus-techizens.vercel.app (real Google sign-in, same live data). No install needed.
+>
+> **For judges:** to run it yourself, start with [Run it in 2 minutes](#run-it-in-2-minutes), then follow [A 5-minute tour](#a-5-minute-tour-what-to-click).
 > The table in [POC coverage](#poc-coverage) shows what is real and what is demo data.
 
 ---

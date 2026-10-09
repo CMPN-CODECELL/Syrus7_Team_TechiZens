@@ -1,6 +1,7 @@
 import { Compass, ShieldCheck, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { isDemoLogin } from "@/api/auth"
 import { useUser } from "@/context/user-context"
 
 const HIGHLIGHTS = [
@@ -68,9 +69,11 @@ export default function LoginPage() {
               <GoogleIcon />
               Sign in with Google
             </Button>
-            <p className="text-center text-xs text-muted-foreground">
-              Demo mode · no real Google account is used.
-            </p>
+            {isDemoLogin && (
+              <p className="text-center text-xs text-muted-foreground">
+                Demo mode · no real Google account is used.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -19,6 +19,9 @@ const isConfigured =
   Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) &&
   import.meta.env.VITE_DEMO_LOGIN !== "true"
 
+// True when "Sign in with Google" is the demo login (no Supabase keys, or VITE_DEMO_LOGIN=true).
+export const isDemoLogin = !isConfigured
+
 // Helper to map a database profile row and auth user into the app's User shape
 function formatUser(profileRow, authUser) {
   const name =
