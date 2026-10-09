@@ -45,8 +45,8 @@ what it would save; saves nothing and needs no key).
 
 ## A 5-minute tour: what to click
 
-1. **Onboarding (4 steps).** Pick interests (42 to choose from, "Show all" expands the list), skills (about 110 quick
-   picks, or type your own), your year, and your **country, then city**. "Detect my location" picks the nearest listed city.
+1. **Onboarding (4 steps).** Pick interests (42 to choose from) and skills (about 110 quick picks). Both have a **search box**:
+   type to filter, press Enter to pick a match, or **Add** your own if it is not listed. "Show all" expands the list, your year, and your **country, then city**. "Detect my location" picks the nearest listed city.
 2. **Discover.** You see 400+ real opportunities ranked for you, each with:
    - a **relevance %** and a one-line reason ("Matches Web Development, Python");
    - **Eligible / Not eligible** (with the reason when not eligible);
