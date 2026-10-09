@@ -48,7 +48,7 @@ If a shape needs to change, tell the other person first, because screens depend 
     interests: ["Design"],   // list of text, from INTEREST_OPTIONS in src/data/constants.js
     isBeginner: false,
     year: 2,                 // -2 = Class 10th ... 0 = Class 12th, 1-3 = years, 4 = Final year, 5 = Graduated
-    location: "Delhi",       // a city name, "" if not chosen yet
+    location: "Delhi, India", // "City, Country", "" if not chosen yet (an old value like "Delhi" counts as India)
     budget: 500,             // INR per opportunity
   },
 }
@@ -218,7 +218,7 @@ Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_lik
 // Person (never include contact details)
 {
   id, name,
-  college, year, location,            // year = profile numbers (-2 .. 5); location is a city name
+  college, year, location,            // year = profile numbers (-2 .. 5); location is "City, Country"
   headline,                           // one line, e.g. "Data science and machine learning enthusiast"
   about,                              // a short paragraph
   interests, skills,                  // lists of text

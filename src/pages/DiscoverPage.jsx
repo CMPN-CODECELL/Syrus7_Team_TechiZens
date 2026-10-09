@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Search, Sparkles } from "lucide-react"
+import { ChevronDown, Search, Sparkles, X } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import { searchWithAI } from "@/api/search"
 import AiSearchPanel from "@/components/AiSearchPanel"
@@ -10,16 +10,11 @@ import OpportunityCard from "@/components/OpportunityCard"
 import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 import { CATEGORIES } from "@/data/constants"
+import { ALL_FILTERS, FILTERS, MORE_FILTERS, SORTS } from "@/lib/discoverOptions"
 import { isClosed } from "@/lib/ingestion"
-import { getEligibility, getRelevance, isLowCost, isSustainability } from "@/lib/scoring"
+import { getEligibility, getRelevance } from "@/lib/scoring"
 
-// The four POC filters.
-const FILTERS = [
-  { id: "beginner", label: "Beginner-Friendly", test: (o) => o.level === "Beginner" },
-  { id: "online", label: "Online", test: (o) => o.format === "Online" },
-  { id: "lowCost", label: "Free / Low-Cost", test: isLowCost },
-  { id: "sustainability", label: "Sustainability & Social Impact", test: isSustainability },
-]
+const PAGE_SIZE = 24 // cards shown at first; "Show more" adds this many
 
 export default function DiscoverPage({ onOpen }) {
   const { user } = useUser()
@@ -31,6 +26,9 @@ export default function DiscoverPage({ onOpen }) {
   const [searchTerm, setSearchTerm] = useState("")
   const [category, setCategory] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
+  const [sortId, setSortId] = useState("match")
+  const [showMoreFilters, setShowMoreFilters] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   // AI search: null = not used, otherwise { query, data } (data is null while it is thinking).
   const [ai, setAi] = useState(null)
 
@@ -42,6 +40,17 @@ export default function DiscoverPage({ onOpen }) {
     setActiveFilters((current) =>
       current.includes(id) ? current.filter((f) => f !== id) : [...current, id]
     )
+    setVisibleCount(PAGE_SIZE)
+  }
+
+  function handleSort(event) {
+    setSortId(event.target.value)
+    setVisibleCount(PAGE_SIZE)
+  }
+
+  function clearFilters() {
+    setActiveFilters([])
+    setVisibleCount(PAGE_SIZE)
   }
 
   // Enter or the Ask AI button: send the text as a plain-English request.
@@ -61,6 +70,7 @@ export default function DiscoverPage({ onOpen }) {
   function handleCategory(id) {
     setAi(null) // choosing a type goes back to the normal feed
     setCategory(id)
+    setVisibleCount(PAGE_SIZE)
   }
 
   const search = searchTerm.trim().toLowerCase()
@@ -77,7 +87,7 @@ export default function DiscoverPage({ onOpen }) {
     }))
     .filter(({ opportunity }) => !category || opportunity.category === category)
     .filter(({ opportunity }) =>
-      FILTERS.filter((f) => activeFilters.includes(f.id)).every((f) => f.test(opportunity))
+      ALL_FILTERS.filter((f) => activeFilters.includes(f.id)).every((f) => f.test(opportunity, profile))
     )
     .filter(
       ({ opportunity }) =>
@@ -87,12 +97,7 @@ export default function DiscoverPage({ onOpen }) {
           .toLowerCase()
           .includes(search)
     )
-    // Same score: the one closing soonest comes first.
-    .sort(
-      (a, b) =>
-        b.relevance - a.relevance ||
-        (a.opportunity.deadline ?? "9999").localeCompare(b.opportunity.deadline ?? "9999")
-    )
+    .sort(SORTS.find((s) => s.id === sortId).compare)
 
   // AI results use the AI's own reason on each card.
   const aiCards = (ai?.data?.results ?? [])
@@ -107,6 +112,25 @@ export default function DiscoverPage({ onOpen }) {
 
   const firstName = user.name.split(" ")[0]
   const categoryLabel = CATEGORIES.find((c) => c.id === category)?.label
+
+  // "More filters" stays open while one of them is on, so an active filter is never hidden.
+  const activeMoreCount = MORE_FILTERS.filter((f) => activeFilters.includes(f.id)).length
+  const moreOpen = showMoreFilters || activeMoreCount > 0
+
+  function renderFilterButton(filter) {
+    const isOn = activeFilters.includes(filter.id)
+    return (
+      <Button
+        key={filter.id}
+        size="sm"
+        variant={isOn ? "default" : "outline"}
+        aria-pressed={isOn}
+        onClick={() => toggleFilter(filter.id)}
+      >
+        {filter.label}
+      </Button>
+    )
+  }
 
   function renderCards(cards) {
     return (
@@ -138,7 +162,10 @@ export default function DiscoverPage({ onOpen }) {
         <Input
           type="search"
           value={searchTerm}
-          onChange={(event) => setSearchTerm(event.target.value)}
+          onChange={(event) => {
+            setSearchTerm(event.target.value)
+            setVisibleCount(PAGE_SIZE)
+          }}
           placeholder="Search, or ask: free online coding workshops this weekend"
           aria-label="Search opportunities or ask the AI"
           className="h-11 pr-28 pl-9"
@@ -173,22 +200,41 @@ export default function DiscoverPage({ onOpen }) {
           <>
             <h2 className="text-xl font-semibold">{categoryLabel ?? "For you"}</h2>
 
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Filters">
-              {FILTERS.map((filter) => {
-                const isOn = activeFilters.includes(filter.id)
-                return (
-                  <Button
-                    key={filter.id}
-                    size="sm"
-                    variant={isOn ? "default" : "outline"}
-                    aria-pressed={isOn}
-                    onClick={() => toggleFilter(filter.id)}
-                  >
-                    {filter.label}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filters">
+                {FILTERS.map(renderFilterButton)}
+                <Button size="sm" variant="ghost" aria-expanded={moreOpen} onClick={() => setShowMoreFilters(!moreOpen)}>
+                  More filters{activeMoreCount > 0 ? ` (${activeMoreCount})` : ""}
+                  <ChevronDown className={moreOpen ? "rotate-180" : ""} />
+                </Button>
+                {activeFilters.length > 0 && (
+                  <Button size="sm" variant="ghost" onClick={clearFilters}>
+                    <X /> Clear
                   </Button>
-                )
-              })}
+                )}
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                Sort by
+                <select
+                  value={sortId}
+                  onChange={handleSort}
+                  className="h-8 rounded-lg border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {SORTS.map((sort) => (
+                    <option key={sort.id} value={sort.id}>
+                      {sort.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
+
+            {moreOpen && (
+              <div className="flex flex-wrap gap-2" role="group" aria-label="More filters">
+                {MORE_FILTERS.map(renderFilterButton)}
+              </div>
+            )}
 
             {loadError ? (
               <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
@@ -197,7 +243,19 @@ export default function DiscoverPage({ onOpen }) {
             ) : opportunities === null ? (
               <p className="p-8 text-center text-sm text-muted-foreground">Loading...</p>
             ) : feed.length > 0 ? (
-              renderCards(feed)
+              <>
+                <p className="text-sm text-muted-foreground">
+                  {feed.length} {feed.length === 1 ? "opportunity" : "opportunities"}
+                </p>
+                {renderCards(feed.slice(0, visibleCount))}
+                {feed.length > visibleCount && (
+                  <div className="flex justify-center">
+                    <Button variant="outline" onClick={() => setVisibleCount(visibleCount + PAGE_SIZE)}>
+                      Show more ({feed.length - visibleCount} left)
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
                 <p>{search ? "No keyword matches." : "Nothing matches these filters."}</p>

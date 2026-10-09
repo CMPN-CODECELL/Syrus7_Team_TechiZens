@@ -6,8 +6,9 @@
 // parseQuery(text, { profile, today }) -> criteria (what the student seems to want)
 // findMatches(opportunities, criteria, profile) -> { results, droppedKeys }
 
-import { CITIES } from "@/data/cities"
+import { ALL_CITIES } from "@/data/cities"
 import { isClosed } from "@/lib/ingestion"
+import { cityOf } from "@/lib/location"
 import { getEligibility, getRelevance, getSharedWithProfile, LOW_COST_LIMIT } from "@/lib/scoring"
 
 const escape = (word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -125,10 +126,10 @@ export function parseQuery(text, { profile, today = new Date() }) {
   }
 
   // Place
-  if (take(/\b(?:near me|nearby|my city|my area|around me)\b/) && profile.location && profile.location !== "Other") {
-    criteria.location = { city: profile.location, label: `Near you (${profile.location})` }
+  if (take(/\b(?:near me|nearby|my city|my area|around me)\b/) && cityOf(profile.location)) {
+    criteria.location = { city: cityOf(profile.location), label: `Near you (${cityOf(profile.location)})` }
   } else {
-    const city = CITIES.find((c) => take(new RegExp(`\\b${escape(c.name.toLowerCase())}\\b`)))
+    const city = ALL_CITIES.find((c) => take(new RegExp(`\\b${escape(c.name.toLowerCase())}\\b`)))
     if (city) criteria.location = { city: city.name, label: city.name }
   }
 
@@ -175,7 +176,7 @@ function matches(opportunity, criteria, active, profile) {
   if (active.has("categories") && !criteria.categories.ids.includes(opportunity.category)) return false
   if (active.has("level") && opportunity.level !== criteria.level.value) return false
   if (active.has("topics") && !opportunity.interests.some((i) => criteria.topics.interests.includes(i))) return false
-  if (active.has("location") && opportunity.location?.toLowerCase() !== criteria.location.city.toLowerCase()) return false
+  if (active.has("location") && !(opportunity.location ?? "").toLowerCase().includes(criteria.location.city.toLowerCase())) return false
   if (active.has("team") && (criteria.team.value === "solo") !== (opportunity.teamSize === null)) return false
   if (active.has("eligibleOnly") && !getEligibility(opportunity, profile).qualified) return false
   if (active.has("keywords")) {

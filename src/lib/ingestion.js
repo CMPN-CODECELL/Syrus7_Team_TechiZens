@@ -11,6 +11,13 @@ export function todayIso() {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
+// The date `days` days from today, as "YYYY-MM-DD" (same format and time zone as todayIso).
+export function isoDaysFromToday(days) {
+  const date = new Date()
+  date.setDate(date.getDate() + days)
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
 // Closed = the deadline has passed. If there is no deadline, the end date is used instead.
 // An opportunity whose deadline is today is still open.
 export function isClosed(opportunity, today = todayIso()) {

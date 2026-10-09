@@ -1,0 +1,52 @@
+// Filters and sort options for the Discover feed. Plain functions, so they are easy to test.
+
+import { isoDaysFromToday, needsCheck, todayIso } from "@/lib/ingestion"
+import { cityOf } from "@/lib/location"
+import { isLowCost, isSustainability } from "@/lib/scoring"
+
+// The four POC filters. Each test gets the opportunity and the student's profile.
+export const FILTERS = [
+  { id: "beginner", label: "Beginner-Friendly", test: (o) => o.level === "Beginner" },
+  { id: "online", label: "Online", test: (o) => o.format === "Online" },
+  { id: "lowCost", label: "Free / Low-Cost", test: isLowCost },
+  { id: "sustainability", label: "Sustainability & Social Impact", test: isSustainability },
+]
+
+// Extra filters (added at the product owner's request on 2026-10-09), behind "More filters".
+export const MORE_FILTERS = [
+  {
+    id: "closingSoon",
+    label: "Closing in 7 days",
+    test: (o) => Boolean(o.deadline) && o.deadline >= todayIso() && o.deadline <= isoDaysFromToday(7),
+  },
+  { id: "inPerson", label: "In-person or hybrid", test: (o) => o.format === "In-person" || o.format === "Hybrid" },
+  {
+    id: "myCity",
+    label: "In my city",
+    test: (o, profile) =>
+      Boolean(cityOf(profile.location)) && (o.location ?? "").toLowerCase().includes(cityOf(profile.location).toLowerCase()),
+  },
+  { id: "team", label: "Team events", test: (o) => o.teamSize != null },
+  { id: "verified", label: "Verified only", test: (o) => !needsCheck(o) },
+]
+export const ALL_FILTERS = [...FILTERS, ...MORE_FILTERS]
+
+// Sort options. Ties fall back to best match, then the nearest deadline. Missing values go last.
+const byDeadline = (a, b) => (a.opportunity.deadline ?? "9999").localeCompare(b.opportunity.deadline ?? "9999")
+const byRelevance = (a, b) => b.relevance - a.relevance
+export const SORTS = [
+  { id: "match", label: "Best match", compare: (a, b) => byRelevance(a, b) || byDeadline(a, b) },
+  { id: "soonest", label: "Deadline: soonest", compare: (a, b) => byDeadline(a, b) || byRelevance(a, b) },
+  {
+    id: "latest",
+    label: "Deadline: latest",
+    compare: (a, b) =>
+      (b.opportunity.deadline ?? "").localeCompare(a.opportunity.deadline ?? "") || byRelevance(a, b),
+  },
+  {
+    id: "fee",
+    label: "Fee: low to high",
+    compare: (a, b) =>
+      (a.opportunity.fee ?? Infinity) - (b.opportunity.fee ?? Infinity) || byRelevance(a, b) || byDeadline(a, b),
+  },
+]
