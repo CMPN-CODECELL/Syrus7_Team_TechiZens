@@ -79,6 +79,7 @@ To start fresh, clear this site's localStorage in the browser. In the demo, othe
   - `0003_create_opportunities.sql`: opportunities table with category and deadline indexes
   - `0004_enable_rls_policies.sql`: Row Level Security policies (students manage own profile, public reads listings)
   - `0005_seed_opportunities.sql`: seed dataset containing initial organizers and opportunities
+  - `0006_allow_nullable_opportunity_fields.sql`: nullable deadline, fee, location, format, theme, registration_url for smart ingestion; seeds opp-28 to opp-31; adds headline and about to profiles
 
 ## Remaining (frontend), in suggested order
 

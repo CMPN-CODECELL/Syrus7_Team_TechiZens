@@ -30,6 +30,8 @@ function formatUser(profileRow, authUser) {
   const onboarded = profileRow ? Boolean(profileRow.onboarded) : false
 
   const profile = {
+    headline: profileRow?.headline ?? EMPTY_PROFILE.headline ?? "",
+    about: profileRow?.about ?? EMPTY_PROFILE.about ?? "",
     skills: profileRow?.skills ?? EMPTY_PROFILE.skills,
     interests: profileRow?.interests ?? EMPTY_PROFILE.interests,
     isBeginner: profileRow?.is_beginner ?? EMPTY_PROFILE.isBeginner,
@@ -88,6 +90,8 @@ export async function getCurrentUser() {
         name: user.name,
         email: user.email,
         onboarded: false,
+        headline: user.profile.headline,
+        about: user.profile.about,
         skills: user.profile.skills,
         interests: user.profile.interests,
         is_beginner: user.profile.isBeginner,
@@ -174,6 +178,8 @@ export async function saveUser(user) {
       name: user.name,
       email: user.email,
       onboarded: Boolean(user.onboarded),
+      headline: user.profile?.headline || "",
+      about: user.profile?.about || "",
       skills: user.profile?.skills || [],
       interests: user.profile?.interests || [],
       is_beginner: Boolean(user.profile?.isBeginner),
