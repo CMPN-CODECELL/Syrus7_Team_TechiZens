@@ -15,6 +15,8 @@ The screens never talk to Supabase directly. They call two functions:
 
 - `src/api/auth.js`: `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser`
 - `src/api/opportunities.js`: `getOpportunities`
+- `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
+- `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
 
 Today these return fake data. **Backend dev:** replace the inside of each function with the Supabase
 version, but keep the **function names and the returned shapes** (below). Then the screens keep working
@@ -69,6 +71,34 @@ If a shape needs to change, tell the other person first, because screens depend 
   warning,                   // text explaining why not verified, or null
 }
 ```
+
+**Saved opportunities** (`src/api/saved.js`)
+
+```js
+getSavedIds()                    // -> ["opp-1", "opp-7"]   ids of the logged-in student's saved opportunities
+saveOpportunity(opportunityId)   // -> nothing
+unsaveOpportunity(opportunityId) // -> nothing
+```
+
+Saved opportunities are the ones monitored by Change Sentinel.
+Suggested table: `saved_opportunities (user_id, opportunity_id)` with Row Level Security (own rows only).
+
+**Alert** (each item returned by `getAlerts` in `src/api/alerts.js`; examples in `src/data/mockAlerts.js`)
+
+```js
+{
+  id,
+  opportunityId,                          // must be one of the student's saved opportunities
+  field,                                  // "deadline" | "fee" | "rules"
+  oldValue, newValue,                     // ready-to-show text, e.g. "18 Nov 2026" and "25 Nov 2026"
+  changedAt,                              // ISO date-time
+  read,                                   // true once the student has seen it
+}
+```
+
+`getAlerts()` returns only alerts for the student's saved opportunities, newest first.
+`markAlertRead(alertId)` and `markAllAlertsRead()` return nothing.
+Real change detection (and an optional realtime listener) is backend work.
 
 ## Git workflow (the simple version)
 

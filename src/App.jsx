@@ -1,6 +1,7 @@
 import { useRef, useState } from "react"
 import Header from "@/components/Header"
 import { useUser } from "@/context/user-context"
+import AlertsPage from "@/pages/AlertsPage"
 import ComingSoonPage from "@/pages/ComingSoonPage"
 import DiscoverPage from "@/pages/DiscoverPage"
 import LoginPage from "@/pages/LoginPage"
@@ -24,23 +25,19 @@ const COMING_SOON = {
       "Copy Roster when a team is full, then apply on the organizer's website",
     ],
   },
-  alerts: {
-    title: "Change Sentinel",
-    items: ["In-app alerts for deadline changes", "In-app alerts for fee changes", "In-app alerts for rule changes"],
-  },
 }
 
 function App() {
   const { user, loading } = useUser()
   const [page, setPage] = useState("discover")
   const [openId, setOpenId] = useState(null) // id of the opportunity being viewed, if any
-  const feedScroll = useRef(0) // where the feed was scrolled to, so Back returns there
+  const feedScroll = useRef(0) // where the page was scrolled to, so Back returns there
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading...</div>
   if (!user) return <LoginPage />
   if (!user.onboarded) return <OnboardingPage />
 
-  const comingSoon = COMING_SOON[page]
+  const comingSoon = openId ? null : COMING_SOON[page]
 
   function goTo(nextPage) {
     setPage(nextPage)
@@ -53,7 +50,7 @@ function App() {
     window.scrollTo(0, 0)
   }
 
-  function backToFeed() {
+  function backFromDetail() {
     setOpenId(null)
     requestAnimationFrame(() => window.scrollTo(0, feedScroll.current))
   }
@@ -68,10 +65,10 @@ function App() {
             <DiscoverPage onOpen={openOpportunity} />
           </div>
         )}
-        {page === "discover" && openId && (
-          <OpportunityDetailPage opportunityId={openId} onBack={backToFeed} />
-        )}
-        {page === "profile" && <ProfilePage />}
+        {/* A detail page can be opened from any screen; Back returns to that screen */}
+        {openId && <OpportunityDetailPage opportunityId={openId} onBack={backFromDetail} />}
+        {!openId && page === "alerts" && <AlertsPage onOpen={openOpportunity} />}
+        {!openId && page === "profile" && <ProfilePage />}
         {comingSoon && <ComingSoonPage {...comingSoon} />}
       </main>
     </div>

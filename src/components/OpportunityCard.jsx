@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, ShieldCheck, TriangleAlert } from "lucide-react"
+import { Bookmark, BookmarkCheck, CircleCheck, CircleX, ShieldCheck, TriangleAlert } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -22,7 +22,7 @@ function Fact({ label, value }) {
 // so this component does not care where the numbers come from.
 // The card has 5 rows (top, title, facts, notes, footer). It uses a CSS subgrid so each row
 // lines up with the same row in neighbouring cards. See the grid in DiscoverPage.
-export default function OpportunityCard({ opportunity, relevance, reason, eligibility, onOpen }) {
+export default function OpportunityCard({ opportunity, relevance, reason, eligibility, onOpen, saved, onToggleSave }) {
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
   return (
@@ -92,6 +92,16 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
         </span>
         <Button className="flex-1" variant="outline" onClick={() => onOpen(opportunity.id)}>
           View
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-pressed={saved}
+          aria-label={saved ? "Remove from saved" : "Save for alerts"}
+          title={saved ? "Saved" : "Save"}
+          onClick={() => onToggleSave(opportunity.id)}
+        >
+          {saved ? <BookmarkCheck /> : <Bookmark />}
         </Button>
       </div>
     </Card>

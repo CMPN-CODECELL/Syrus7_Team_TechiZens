@@ -36,6 +36,7 @@ start on `feature/opportunity-detail-page`. Nobody works directly on `main`; cha
 - Profile page: interests, skills, beginner toggle, year, location, budget (edits update the feed everywhere)
 - 27 mock opportunities with real organizers (colleges, companies, startups, platforms)
 - Opportunity detail page (branch feature/opportunity-detail-page): all POC fields, relevance + eligibility with reasons, conflict warning banner, "Last verified" (flagged as possibly out of date after 14 days), source link, "Apply on organizer's website" handoff. Back keeps the search, filters and scroll position.
+- Save opportunities and Change Sentinel alerts (branch feature/saved-and-alerts, built on top of the detail-page branch): bookmark on cards, Save button on the detail page, Alerts page with in-app alerts (deadline / fee / rules, old to new value, mark read), Saved list, unread badge in the nav. Saved opportunities are the monitored ones. Frontend uses mock data through new src/api/saved.js and src/api/alerts.js.
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 
 ## Remaining (frontend), in suggested order
@@ -51,13 +52,13 @@ opportunity id in state in `App.jsx` and add a Back button.
 - Save / Watch button (feeds item 2).
 - Cheat sheet section (item 3).
 
-### 2. Saved opportunities and Change Sentinel (POC 8)
+### 2. Saved opportunities and Change Sentinel (POC 8): DONE on the frontend (mock data). Backend still to do
 - Save / unsave an opportunity; show saved ones somewhere (Alerts page or a Saved tab).
 - Alerts page (currently "Coming soon"): in-app alerts that say exactly what changed in **deadline, fee or rules**
   (old value to new value, when). Use mock alerts for now. Unread badge on the Alerts nav item.
 - Needs new data shapes (agree with backend dev first): saved ids on the user, and an alert object
   `{ id, opportunityId, field: "deadline" | "fee" | "rules", oldValue, newValue, changedAt, read }`.
-- Real change detection and realtime listeners are backend work.
+- Real change detection and realtime listeners are backend work. New api functions and shapes are documented in CONTRIBUTING.md; the backend dev replaces the mock bodies in src/api/saved.js and src/api/alerts.js and deletes src/data/mockAlerts.js when live.
 
 ### 3. Participation Cheat Sheet (POC 5)
 Per opportunity: **prerequisites/setup**, **key milestones**, **deliverable checklist**.
@@ -96,7 +97,8 @@ Per opportunity: **prerequisites/setup**, **key milestones**, **deliverable chec
 - Google OAuth through Supabase; real `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser` in `src/api/auth.js`.
 - Tables: profiles, organizers, opportunities (shapes in CONTRIBUTING.md), RLS so students see only their own profile, seed from `src/data/mockOpportunities.js`. All SQL as numbered files in `supabase/migrations/`.
 - Real `getOpportunities` in `src/api/opportunities.js`.
-- Later: saved opportunities, alerts and realtime, squads/connections with double opt-in, ingestion (merge duplicates, close expired), AI search function.
+- Now also needed: saved_opportunities and alerts tables behind src/api/saved.js and src/api/alerts.js (shapes in CONTRIBUTING.md).
+- Later: realtime alerts, squads/connections with double opt-in, ingestion (merge duplicates, close expired), AI search function.
 - Delete `src/data/mockOpportunities.js` once real data is live.
 
 ## Open questions for the product owner

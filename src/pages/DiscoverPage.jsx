@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import CategoryCards from "@/components/CategoryCards"
 import OpportunityCard from "@/components/OpportunityCard"
+import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 import { CATEGORIES } from "@/data/constants"
 import { getEligibility, getRelevance, isLowCost, isSustainability } from "@/lib/scoring"
@@ -20,6 +21,7 @@ const FILTERS = [
 export default function DiscoverPage({ onOpen }) {
   const { user } = useUser()
   const { profile } = user
+  const { savedIds, toggleSave } = useSaved()
 
   const [opportunities, setOpportunities] = useState(null) // null = still loading
   const [loadError, setLoadError] = useState(false)
@@ -127,6 +129,8 @@ export default function DiscoverPage({ onOpen }) {
                 reason={reason}
                 eligibility={eligibility}
                 onOpen={onOpen}
+                saved={savedIds.includes(opportunity.id)}
+                onToggleSave={toggleSave}
               />
             ))}
           </div>

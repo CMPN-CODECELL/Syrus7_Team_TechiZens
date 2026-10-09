@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert } from "lucide-react"
+import { ArrowLeft, Bookmark, BookmarkCheck, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 import { CATEGORIES } from "@/data/constants"
 import {
@@ -30,6 +31,7 @@ function Fact({ label, value }) {
 
 export default function OpportunityDetailPage({ opportunityId, onBack }) {
   const { user } = useUser()
+  const { savedIds, toggleSave } = useSaved()
   const [opportunity, setOpportunity] = useState(undefined) // undefined = loading, null = not found
   const [now] = useState(() => Date.now()) // fixed when the page opens
 
@@ -64,6 +66,7 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
   const eligibility = getEligibility(opportunity, user.profile)
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
+  const isSaved = savedIds.includes(opportunity.id)
   const age = daysSince(opportunity.lastVerified, now)
   const isStale = age > STALE_AFTER_DAYS
 
@@ -171,15 +174,30 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
 
       {/* Handoff: Nexus never applies for the student */}
       <div className="space-y-2 border-t pt-6">
-        <a
-          href={opportunity.registrationUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={cn(buttonVariants({ size: "lg" }), "h-11 w-full text-base sm:w-auto sm:px-6")}
-        >
-          Apply on organizer's website <ExternalLink />
-        </a>
-        <p className="text-xs text-muted-foreground">You apply on their site. Nexus never applies for you.</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={opportunity.registrationUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn(buttonVariants({ size: "lg" }), "h-11 flex-1 text-base sm:flex-none sm:px-6")}
+          >
+            Apply on organizer's website <ExternalLink />
+          </a>
+          <Button
+            variant="outline"
+            size="lg"
+            className="h-11 px-4 text-base"
+            aria-pressed={isSaved}
+            onClick={() => toggleSave(opportunity.id)}
+          >
+            {isSaved ? <BookmarkCheck /> : <Bookmark />}
+            {isSaved ? "Saved" : "Save"}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          You apply on their site. Nexus never applies for you.
+          {isSaved && " We'll alert you if the deadline, fee or rules change."}
+        </p>
       </div>
     </div>
   )
