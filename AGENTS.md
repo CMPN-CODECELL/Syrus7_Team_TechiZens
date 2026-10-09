@@ -210,6 +210,9 @@ The POC describes a short student profile containing:
 
 The frontend should use these fields when representing the student's profile and opportunity matching.
 
+Note (user decision): Weekly hours is NOT collected in onboarding or used in relevance scoring for now.
+It will return in the team-building (Squad Hub) section.
+
 ---
 
 ## Frontend Technology
@@ -226,6 +229,8 @@ The current project uses:
 - Vite
 - JavaScript
 - ESLint
+- Tailwind CSS 4
+- shadcn/ui components (in `src/components/ui`, generated; avoid hand-editing)
 
 Backend technology from the POC:
 
@@ -244,20 +249,18 @@ Use mock/static data for frontend development where necessary.
 
 ## Current Development Stage
 
-Current status:
+The live status (what is built, what is left, and the decisions made so far) is in
+`docs/PROJECT_STATUS.md`. Read it before starting work and update it when you finish something.
 
-- GitHub repository created.
-- Repository connected to Antigravity IDE.
-- Vite React project initialized.
-- JavaScript selected.
-- ESLint selected.
-- Local Vite development server tested successfully.
-- Initial Vite project committed and pushed to GitHub.
-- Backend is not ready.
+Summary:
 
-The first GitHub commit is:
-
-"Initialize Nexus frontend with Vite"
+- Frontend runs locally with mock data (login is a demo, opportunities are fake).
+- Built: login page, 5-step onboarding, Discover feed with category cards and filters,
+  opportunity cards with organizer logos, Profile page with editable interests.
+- Placeholder pages only: Cheat Sheets, Squad Hub, Alerts (Change Sentinel).
+- Backend (Supabase and Google OAuth) is being built by a teammate behind `src/api/`.
+- Two people work in parallel: one on the frontend, one on Supabase and auth.
+  See `CONTRIBUTING.md` for the file ownership split and git workflow.
 
 ---
 
@@ -339,6 +342,17 @@ However:
 - When requirements are ambiguous, ask the user.
 
 The user is a beginner, so instructions and changes should be explained clearly and simply.
+
+---
+
+## Keeping context up to date
+
+These files are the shared memory of the project. Any person or AI tool (Claude, Antigravity, others) must
+keep them current:
+
+- `docs/PROJECT_STATUS.md`: update the done/left lists and add important decisions.
+- `CONTRIBUTING.md`: update the data shapes if they change (and tell the other developer).
+- This file: only change it when project rules change.
 
 ---
 
