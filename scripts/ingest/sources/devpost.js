@@ -24,10 +24,16 @@ export async function fetchDevpost({ maxPages = 25 } = {}) {
     try {
       data = await fetchPage(page)
     } catch (err) {
-      // One retry after a longer pause, then give up on this page and keep what we have.
+      // One retry after a longer pause. If that fails too, stop here and keep what we have so far
+      // (a partial list is still saved; it only adds and updates, so nothing already stored is lost).
       console.warn(`  page ${page} failed (${err.message}), retrying once...`)
       await sleep(PAUSE_MS * 3)
-      data = await fetchPage(page)
+      try {
+        data = await fetchPage(page)
+      } catch (retryErr) {
+        console.warn(`  page ${page} failed again (${retryErr.message}), stopping with ${all.length} hackathons.`)
+        break
+      }
     }
 
     const items = data.hackathons ?? []

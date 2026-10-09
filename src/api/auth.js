@@ -155,16 +155,17 @@ export async function signOut() {
 }
 
 // Saves the whole user (profile + onboarded flag). Called after every profile change.
+// Returns true when the save worked, false when it did not (so the screen can tell the student).
 export async function saveUser(user) {
-  if (!user) return
+  if (!user) return true
 
   if (!isConfigured) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
     } catch {
-      // Storage unavailable
+      // Storage unavailable: nothing is lost that was ever going to last, so this is not an error.
     }
-    return
+    return true
   }
 
   try {
@@ -173,7 +174,8 @@ export async function saveUser(user) {
     } = await supabase.auth.getSession()
 
     if (!session?.user) {
-      return
+      console.error("Could not save the profile: nobody is signed in.")
+      return false
     }
 
     const { error } = await supabase.from("profiles").upsert({
@@ -193,8 +195,11 @@ export async function saveUser(user) {
 
     if (error) {
       console.error("Error saving profile to Supabase:", error.message)
+      return false
     }
+    return true
   } catch (err) {
     console.error("Error in saveUser:", err)
+    return false
   }
 }

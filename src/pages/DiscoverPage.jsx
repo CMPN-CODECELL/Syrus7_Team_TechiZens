@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ChevronDown, RefreshCw, Search, Sparkles, X } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import { searchWithAI } from "@/api/search"
@@ -42,7 +42,7 @@ export default function DiscoverPage({ onOpen }) {
   function refresh() {
     setRefreshing(true)
     setLoadError(false)
-    getOpportunities()
+    getOpportunities({ force: true })
       .then((latest) => setOpportunities((old) => (latest.length === 0 && old?.length ? old : latest)))
       .catch(() => setLoadError(true))
       .finally(() => setRefreshing(false))
@@ -86,17 +86,24 @@ export default function DiscoverPage({ onOpen }) {
   }
 
   const search = searchTerm.trim().toLowerCase()
-  const byId = Object.fromEntries((opportunities ?? []).map((o) => [o.id, o]))
+  const byId = useMemo(() => Object.fromEntries((opportunities ?? []).map((o) => [o.id, o])), [opportunities])
 
-  // Normal feed: score every open opportunity against the profile, filter, then rank by relevance.
+  // Scoring is the slow part, so it only reruns when the listings or the profile change (not on every keystroke).
   // Closed ones (deadline passed) stay out of the feed; they still open from saved items and posts.
-  const feed = (opportunities ?? [])
-    .filter((opportunity) => !isClosed(opportunity))
-    .map((opportunity) => ({
-      opportunity,
-      ...getRelevance(opportunity, profile),
-      eligibility: getEligibility(opportunity, profile),
-    }))
+  const scored = useMemo(
+    () =>
+      (opportunities ?? [])
+        .filter((opportunity) => !isClosed(opportunity))
+        .map((opportunity) => ({
+          opportunity,
+          ...getRelevance(opportunity, profile),
+          eligibility: getEligibility(opportunity, profile),
+        })),
+    [opportunities, profile]
+  )
+
+  // Normal feed: filter the scored list, then rank by relevance.
+  const feed = scored
     .filter(({ opportunity }) => !category || opportunity.category === category)
     .filter(({ opportunity }) =>
       ALL_FILTERS.filter((f) => activeFilters.includes(f.id)).every((f) => f.test(opportunity, profile))

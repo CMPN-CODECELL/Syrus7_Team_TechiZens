@@ -103,19 +103,34 @@ export const INTEREST_KEYWORDS = {
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
+// Each keyword's pattern is built once and reused (building ~300 patterns per opportunity made searching slow).
+const wordPatterns = new Map()
+
 // True when `word` appears in `text` as a whole word, or (for 5+ letters) as the start of a word.
 export function hasWord(text, word) {
-  const end = word.length >= 5 ? "" : "(?![a-z0-9])"
-  return new RegExp(`(?<![a-z0-9])${escapeRegExp(word.toLowerCase())}${end}`).test(text.toLowerCase())
+  let pattern = wordPatterns.get(word)
+  if (!pattern) {
+    const end = word.length >= 5 ? "" : "(?![a-z0-9])"
+    pattern = new RegExp(`(?<![a-z0-9])${escapeRegExp(word.toLowerCase())}${end}`)
+    wordPatterns.set(word, pattern)
+  }
+  return pattern.test(text.toLowerCase())
 }
+
+// Topics already worked out, per opportunity object (a new object after a reload gets a fresh entry).
+const topicsCache = new WeakMap()
 
 // Interests from the opportunity's own list, plus the ones its title and theme point to.
 export function getTopics(opportunity) {
+  const cached = topicsCache.get(opportunity)
+  if (cached) return cached
   const text = `${opportunity.title ?? ""} ${opportunity.theme ?? ""}`
   const fromText = Object.entries(INTEREST_KEYWORDS)
     .filter(([, words]) => words.some((word) => hasWord(text, word)))
     .map(([interest]) => interest)
-  return [...new Set([...(opportunity.interests ?? []), ...fromText])]
+  const topics = [...new Set([...(opportunity.interests ?? []), ...fromText])]
+  topicsCache.set(opportunity, topics)
+  return topics
 }
 
 export function getRelevance(opportunity, profile) {

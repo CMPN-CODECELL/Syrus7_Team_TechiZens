@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { getCurrentUser, saveUser, signInWithGoogle, signOut as apiSignOut } from "@/api/auth"
 import { supabase } from "@/lib/supabase"
 import { UserContext } from "./user-context"
@@ -8,6 +8,8 @@ import { UserContext } from "./user-context"
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [saveError, setSaveError] = useState(false) // true when the last save of the profile failed
+  const latestUser = useRef(null) // the newest version of the user, which is what a retry saves
 
   useEffect(() => {
     let isMounted = true
@@ -49,25 +51,40 @@ export function UserProvider({ children }) {
 
   async function signOut() {
     await apiSignOut()
+    latestUser.current = null
+    setSaveError(false)
     setUser(null)
+  }
+
+  // Saves in the background and remembers whether it worked. Only the newest save decides the flag, so a slow
+  // older save cannot hide a failure (or report one) for something the student changed afterwards.
+  async function persist(next) {
+    latestUser.current = next
+    const saved = await saveUser(next)
+    if (latestUser.current === next) setSaveError(!saved)
   }
 
   // Updates the screen straight away, then saves in the background.
   function updateProfile(changes) {
     const next = { ...user, profile: { ...user.profile, ...changes } }
     setUser(next)
-    saveUser(next)
+    persist(next)
   }
 
   // Called when the step-by-step profile setup is finished.
   function completeOnboarding() {
     const next = { ...user, onboarded: true }
     setUser(next)
-    saveUser(next)
+    persist(next)
+  }
+
+  // "Try again" after a failed save.
+  function retrySave() {
+    if (latestUser.current) persist(latestUser.current)
   }
 
   return (
-    <UserContext.Provider value={{ user, loading, signIn, signOut, updateProfile, completeOnboarding }}>
+    <UserContext.Provider value={{ user, loading, saveError, retrySave, signIn, signOut, updateProfile, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   )

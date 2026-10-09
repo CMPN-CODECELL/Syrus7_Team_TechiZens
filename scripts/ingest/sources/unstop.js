@@ -34,7 +34,13 @@ export async function fetchUnstop({ maxPages = Infinity, limit = 60 } = {}) {
       } catch (err) {
         console.warn(`  ${kind} page ${page} failed (${err.message}), retrying once...`)
         await sleep(PAUSE_MS * 3)
-        data = await fetchPage(kind, page)
+        try {
+          data = await fetchPage(kind, page)
+        } catch (retryErr) {
+          // Give up on the rest of this kind, keep what was read, and carry on with the next kind.
+          console.warn(`  ${kind} page ${page} failed again (${retryErr.message}), skipping the rest of ${kind}.`)
+          break
+        }
       }
       items.push(...(data.data ?? []))
       if (page >= (data.last_page ?? 1) || (data.data ?? []).length === 0) break

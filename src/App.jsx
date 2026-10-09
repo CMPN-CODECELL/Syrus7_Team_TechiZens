@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
 import Header from "@/components/Header"
 import { NavContext } from "@/context/nav-context"
 import { useUser } from "@/context/user-context"
@@ -13,7 +14,7 @@ import ProfilePage from "@/pages/ProfilePage"
 import SquadHubPage from "@/pages/SquadHubPage"
 
 function App() {
-  const { user, loading } = useUser()
+  const { user, loading, saveError, retrySave } = useUser()
   const [page, setPage] = useState("discover")
   const [openId, setOpenId] = useState(null) // id of the opportunity being viewed, if any
   const [personId, setPersonId] = useState(null) // id of the student whose profile is being viewed, if any
@@ -86,6 +87,14 @@ function App() {
     <NavContext.Provider value={{ openPerson, openSquad }}>
       <div className="min-h-screen bg-background text-foreground">
         <Header page={page} onNavigate={goTo} />
+        {saveError && (
+          <div role="alert" className="flex flex-wrap items-center justify-center gap-3 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            Your last change was not saved. Check your connection.
+            <Button size="sm" variant="outline" onClick={retrySave}>
+              Try again
+            </Button>
+          </div>
+        )}
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           {/* The feed stays mounted (just hidden) so search and filters are kept when you come back */}
           {page === "discover" && (
