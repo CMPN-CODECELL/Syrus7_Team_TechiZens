@@ -1,0 +1,59 @@
+# Daily ingestion: fetches new opportunities from Devpost and Unstop and saves them to Supabase.
+# Same thing as running `npm run ingest` on your computer (see scripts/ingest/README.md).
+#
+# Setup (once, in the GitHub repo): Settings -> Secrets and variables -> Actions -> New repository secret
+#   SUPABASE_URL                 your project URL (the same value as VITE_SUPABASE_URL)
+#   SUPABASE_SERVICE_ROLE_KEY    the service_role key (Supabase -> Project Settings -> API)
+# Without those two secrets the job skips itself instead of failing.
+#
+# Run it by hand any time: Actions tab -> "Daily ingestion" -> Run workflow.
+
+name: Daily ingestion
+
+on:
+  schedule:
+    - cron: "30 0 * * *" # every day at 00:30 UTC (6:00 am in India). GitHub may start it a few minutes late.
+  workflow_dispatch:
+
+# Never run two ingestions at once.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Check secrets
+        id: secrets
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::notice::SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not set in this repository. Skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Run ingestion
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm run ingest

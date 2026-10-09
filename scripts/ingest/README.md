@@ -25,6 +25,17 @@ npm run ingest -- --limit=100  # Unstop: up to 100 per type instead of the defau
 
 Running it again is safe: rows are updated, not duplicated (`id` is `devpost-<Devpost id>`).
 
+## Automatic daily run (GitHub Actions)
+
+`.github/workflows/ingest.yml` runs `npm run ingest` every day at 00:30 UTC (6:00 am India time). To turn it on, add two
+secrets in the GitHub repo (Settings -> Secrets and variables -> Actions -> New repository secret):
+
+- `SUPABASE_URL`: your project URL (same value as `VITE_SUPABASE_URL`)
+- `SUPABASE_SERVICE_ROLE_KEY`: the service_role key
+
+Until both exist the job skips itself (no failure). You can also run it any time from the Actions tab -> Daily ingestion ->
+Run workflow. Add the secrets in **one** repo only, or it runs twice. Scheduled runs only start from the default branch, and
+GitHub pauses them after 60 days without repository activity.
 ## What it does
 
 | File | Job |
