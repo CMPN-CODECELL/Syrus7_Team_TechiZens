@@ -87,7 +87,12 @@ export default function DiscoverPage({ onOpen }) {
           .toLowerCase()
           .includes(search)
     )
-    .sort((a, b) => b.relevance - a.relevance)
+    // Same score: the one closing soonest comes first.
+    .sort(
+      (a, b) =>
+        b.relevance - a.relevance ||
+        (a.opportunity.deadline ?? "9999").localeCompare(b.opportunity.deadline ?? "9999")
+    )
 
   // AI results use the AI's own reason on each card.
   const aiCards = (ai?.data?.results ?? [])
