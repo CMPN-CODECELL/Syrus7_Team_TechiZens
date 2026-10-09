@@ -4,27 +4,13 @@ import { NavContext } from "@/context/nav-context"
 import { useUser } from "@/context/user-context"
 import AlertsPage from "@/pages/AlertsPage"
 import ConnectionsPage from "@/pages/ConnectionsPage"
-import ComingSoonPage from "@/pages/ComingSoonPage"
 import DiscoverPage from "@/pages/DiscoverPage"
 import LoginPage from "@/pages/LoginPage"
 import OnboardingPage from "@/pages/OnboardingPage"
 import OpportunityDetailPage from "@/pages/OpportunityDetailPage"
 import PersonProfilePage from "@/pages/PersonProfilePage"
 import ProfilePage from "@/pages/ProfilePage"
-
-// Features from the POC that are not built yet. Each gets its own menu entry.
-const COMING_SOON = {
-  squads: {
-    title: "Squad Hub",
-    items: [
-      "Leaders see the top 3-5 opted-in candidates",
-      "Solo seekers see the top 5 best-fit squads",
-      "Lightweight Connect mode for workshops",
-      "Contacts revealed only after double opt-in",
-      "Copy Roster when a team is full, then apply on the organizer's website",
-    ],
-  },
-}
+import SquadHubPage from "@/pages/SquadHubPage"
 
 function App() {
   const { user, loading } = useUser()
@@ -32,6 +18,7 @@ function App() {
   const [openId, setOpenId] = useState(null) // id of the opportunity being viewed, if any
   const [personId, setPersonId] = useState(null) // id of the student whose profile is being viewed, if any
   const [connectionsTab, setConnectionsTab] = useState("feed") // kept here so Back returns to the same tab
+  const [squadId, setSquadId] = useState(null) // opportunity selected in the Squad Hub, kept so Back returns to it
   const scrollStack = useRef([]) // where each screen was scrolled to, so Back returns there
   const personHistory = useRef([]) // profiles visited before the current one, so Back goes through them
 
@@ -40,7 +27,6 @@ function App() {
   if (!user.onboarded) return <OnboardingPage />
 
   const showingSubPage = Boolean(openId || personId)
-  const comingSoon = showingSubPage ? null : COMING_SOON[page]
 
   function goTo(nextPage) {
     setPage(nextPage)
@@ -73,6 +59,13 @@ function App() {
     window.scrollTo(0, 0)
   }
 
+  // "Find teammates" on an opportunity: open the Squad Hub with it selected.
+  function openSquad(opportunityId) {
+    setSquadId(opportunityId)
+    goTo("squads")
+    window.scrollTo(0, 0)
+  }
+
   function backFromOpportunity() {
     setOpenId(null)
     restore()
@@ -90,7 +83,7 @@ function App() {
   }
 
   return (
-    <NavContext.Provider value={{ openPerson }}>
+    <NavContext.Provider value={{ openPerson, openSquad }}>
       <div className="min-h-screen bg-background text-foreground">
         <Header page={page} onNavigate={goTo} />
         <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -109,8 +102,10 @@ function App() {
           {!showingSubPage && page === "connections" && (
             <ConnectionsPage onOpen={openOpportunity} tab={connectionsTab} onTabChange={setConnectionsTab} />
           )}
+          {!showingSubPage && page === "squads" && (
+            <SquadHubPage selectedId={squadId} onSelect={setSquadId} onOpen={openOpportunity} />
+          )}
           {!showingSubPage && page === "profile" && <ProfilePage />}
-          {comingSoon && <ComingSoonPage {...comingSoon} />}
         </main>
       </div>
     </NavContext.Provider>

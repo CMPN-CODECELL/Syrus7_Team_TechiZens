@@ -227,7 +227,7 @@ The POC describes a short student profile containing:
 The frontend should use these fields when representing the student's profile and opportunity matching.
 
 Note (user decision): Weekly hours is NOT collected in onboarding or used in relevance scoring for now.
-It will return in the team-building (Squad Hub) section.
+It returned only in the Squad Hub, where the student picks their weekly hours when opting in for an opportunity.
 
 Note (user decision): the profile also has an editable headline (one line) and About (short paragraph), shown to
 connections on the student's profile. They are edited on the Profile page.
@@ -277,7 +277,10 @@ Summary:
 - Built: login page, 5-step onboarding, Discover feed with category cards and filters,
   opportunity cards with organizer logos, Profile page with editable interests.
 - Also built: opportunity detail page, saved opportunities with Change Sentinel alerts, Connections feed.
-- Placeholder page only: Squad Hub.
+- Squad Hub built on mock data (opt in per opportunity as leader or solo seeker with weekly hours, top candidates or
+  squads ranked by skill and schedule fit, Connect mode, double opt-in contact reveal, Copy Roster when full).
+- All POC features now have a frontend. Remaining frontend work is smaller (Closed/missing-details display, polish);
+  the main remaining work is the backend behind `src/api/*`.
 - Backend (Supabase and Google OAuth) is being built by a teammate behind `src/api/`.
 - Two people work in parallel: one on the frontend, one on Supabase and auth.
   See `CONTRIBUTING.md` for the file ownership split and git workflow.

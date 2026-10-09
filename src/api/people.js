@@ -71,6 +71,11 @@ function unansweredInvitations() {
 
 // ---- Connections -----------------------------------------------------------
 
+// Several people by id (unknown ids are skipped). Used by the Squad Hub (see squads.js).
+export async function getPeopleByIds(personIds) {
+  return personIds.map(findPerson).filter(Boolean).map(toPerson)
+}
+
 // Ids of the students this student is connected to. Used by the feed (see connections.js).
 // With a real backend this stays on the server; the feed query already filters by connections.
 export async function getConnectedIds() {

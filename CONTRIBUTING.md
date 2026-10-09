@@ -15,6 +15,7 @@ The screens never talk to Supabase directly. They call two functions:
 
 - `src/api/auth.js`: `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser`
 - `src/api/opportunities.js`: `getOpportunities`
+- `src/api/squads.js`: `getOptIns`, `optIn`, `optOut`, `getMatches`, `getTeam`, `sendRequest`, `withdrawRequest`
 - `src/api/search.js`: `searchWithAI`
 - `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
 - `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
@@ -76,6 +77,29 @@ If a shape needs to change, tell the other person first, because screens depend 
   warning,                   // text explaining why not verified, or null
 }
 ```
+
+**Squad Hub** (`src/api/squads.js`; examples in `src/data/mockSquads.js`). The full shapes are written at the top of that file.
+
+```js
+// The student opts in per opportunity. role = "leader" | "seeker" | "connect". hoursPerWeek is 3, 6, 10, 15 or 20 (null for connect).
+optIn({ opportunityId, role, hoursPerWeek })     optOut(opportunityId)     getOptIns()   // [{ opportunityId, role, hoursPerWeek }]
+
+getMatches(opportunityId)    // null if not opted in, otherwise one of:
+//   { role: "leader",  hoursPerWeek, candidates: [{ person, hoursPerWeek, status, contact }] }
+//   { role: "seeker",  hoursPerWeek, squads: [{ id, leader, members, capacity, lookingForSkills, hoursPerWeek, status, contact }] }
+//   { role: "connect", hoursPerWeek, attendees: [{ person, status, contact }] }
+getTeam(opportunityId)       // { members: [{ person, isMe, contact }], capacity, full }, or null (connect mode / no squad yet)
+
+sendRequest(opportunityId, targetId)       // leader invites a candidate; seeker asks to join a squad (targetId = the squad's leader); connect mode asks to connect
+withdrawRequest(opportunityId, targetId)
+```
+
+`status` is `"none" | "pending" | "mutual"`. **Double opt-in is the privacy rule:** `contact` must be `null` until the status is
+`"mutual"` (both students agreed), and only the people who agreed with the student get a contact. A seeker can only have one
+open request per opportunity. `capacity` is the opportunity's maximum team size. Return raw data: the screen does the ranking
+(skill fit and schedule fit, in `src/lib/squadMatching.js`). The mock makes the other student "agree" 4 seconds after being asked
+(except a few who never answer); a real backend should let the other student answer whenever they choose, ideally with a realtime listener.
+Suggested tables: `squad_optins`, `squads` and `squad_members`, `squad_requests`, with Row Level Security.
 
 **AI search** (`src/api/search.js`)
 

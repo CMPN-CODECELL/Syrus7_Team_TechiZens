@@ -19,7 +19,8 @@ export function yearLabel(year) {
   return YEAR_OPTIONS.find((option) => option.value === year)?.label ?? "unknown year"
 }
 
-function overlap(a, b) {
+// Items of `a` that also appear in `b` (ignoring upper/lower case).
+export function overlap(a, b) {
   const lowerB = b.map((item) => item.toLowerCase())
   return a.filter((item) => lowerB.includes(item.toLowerCase()))
 }

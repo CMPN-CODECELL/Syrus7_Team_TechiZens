@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, Bookmark, BookmarkCheck, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert } from "lucide-react"
+import { ArrowLeft, Bookmark, BookmarkCheck, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert, Users } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useNav } from "@/context/nav-context"
 import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 import { CATEGORIES } from "@/data/constants"
@@ -32,6 +33,7 @@ function Fact({ label, value }) {
 export default function OpportunityDetailPage({ opportunityId, onBack }) {
   const { user } = useUser()
   const { savedIds, toggleSave } = useSaved()
+  const { openSquad } = useNav()
   const [opportunity, setOpportunity] = useState(undefined) // undefined = loading, null = not found
   const [now] = useState(() => Date.now()) // fixed when the page opens
 
@@ -192,6 +194,10 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
           >
             {isSaved ? <BookmarkCheck /> : <Bookmark />}
             {isSaved ? "Saved" : "Save"}
+          </Button>
+          <Button variant="outline" size="lg" className="h-11 px-4 text-base" onClick={() => openSquad(opportunity.id)}>
+            <Users />
+            {opportunity.teamSize ? "Find teammates" : "Connect with others"}
           </Button>
         </div>
         <p className="text-xs text-muted-foreground">
