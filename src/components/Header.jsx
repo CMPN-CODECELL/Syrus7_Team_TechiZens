@@ -30,6 +30,7 @@ export default function Header({ page, onNavigate }) {
     .slice(0, 2)
 
   return (
+    <>
     <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <button
@@ -65,21 +66,31 @@ export default function Header({ page, onNavigate }) {
         </div>
       </div>
 
-      {/* Mobile navigation */}
-      <nav className="flex gap-1 overflow-x-auto border-t px-4 py-2 md:hidden">
-        {NAV_ITEMS.map((item) => (
-          <Button
-            key={item.id}
-            size="sm"
-            variant={page === item.id ? "secondary" : "ghost"}
-            onClick={() => onNavigate(item.id)}
-          >
-            <item.icon />
-            {item.label}
-              {badge(item.id)}
-          </Button>
-        ))}
-      </nav>
     </header>
+
+    {/* Mobile navigation: a tab bar fixed to the bottom, so all five pages fit without sideways scrolling */}
+    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      {NAV_ITEMS.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          aria-current={page === item.id ? "page" : undefined}
+          onClick={() => onNavigate(item.id)}
+          className={
+            "relative flex flex-col items-center gap-0.5 py-2 text-[0.7rem] font-medium " +
+            (page === item.id ? "text-foreground" : "text-muted-foreground")
+          }
+        >
+          <item.icon className="size-5" />
+          {item.label}
+          {item.id === "alerts" && unreadCount > 0 && (
+            <span className="absolute top-1 left-1/2 ml-2 rounded-full bg-primary px-1.5 text-[0.6rem] leading-4 text-primary-foreground">
+              {unreadCount}
+            </span>
+          )}
+        </button>
+      ))}
+    </nav>
+    </>
   )
 }

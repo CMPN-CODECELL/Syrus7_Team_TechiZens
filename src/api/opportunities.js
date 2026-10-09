@@ -34,6 +34,16 @@ async function fetchAllRows() {
   }
 }
 
+// Some scraped organizers have no real name ("n/a", "localhost-nyc"). Show the platform it came from instead.
+const JUNK_ORGANIZER = /^(n\/?a|none|null|undefined|unknown|tests?|localhost.*|[-.\s]*)$/i
+const PLATFORM_NAMES = { devpost: "Devpost", unstop: "Unstop" }
+
+function organizerName(row) {
+  const name = (row.organizer?.name ?? "").trim()
+  if (name && !JUNK_ORGANIZER.test(name)) return name
+  return PLATFORM_NAMES[row.source] ?? "Organizer"
+}
+
 function toOpportunities(rows) {
   // Map database columns to the exact Opportunity data shape in CONTRIBUTING.md.
   // Missing details (fee, deadline, location, format, theme, registrationUrl) MUST be null, not "" or 0.
@@ -46,7 +56,7 @@ function toOpportunities(rows) {
     category: row.category,
     theme: row.theme !== null && row.theme !== undefined && row.theme !== "" ? row.theme : null,
     organizer: {
-      name: row.organizer?.name || "Organizer",
+      name: organizerName(row),
       type: row.organizer?.type || "Platform",
       website: row.organizer?.website || "",
       logo: row.organizer?.logo || null,

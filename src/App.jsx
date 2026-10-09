@@ -95,7 +95,7 @@ function App() {
             </Button>
           </div>
         )}
-        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <main className="mx-auto max-w-7xl px-4 pt-8 pb-24 sm:px-6 md:pb-8">
           {/* The feed stays mounted (just hidden) so search and filters are kept when you come back */}
           {page === "discover" && (
             <div hidden={showingSubPage}>

@@ -57,9 +57,11 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
       </div>
 
       {/* Title */}
-      <h3 className="line-clamp-2 px-5 pt-3 pb-4 text-lg leading-snug font-semibold">
-        {opportunity.title}
-      </h3>
+      <div className="px-5 pt-3 pb-4">
+        <h3 className="line-clamp-2 text-lg leading-snug font-semibold" title={opportunity.title}>
+          {opportunity.title}
+        </h3>
+      </div>
 
       {/* Facts: two equal columns */}
       <div className="grid grid-cols-2 divide-x border-y">

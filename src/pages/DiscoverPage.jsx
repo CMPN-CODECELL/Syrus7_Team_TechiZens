@@ -16,6 +16,11 @@ import { getEligibility, getRelevance } from "@/lib/scoring"
 
 const PAGE_SIZE = 24 // cards shown at first; "Show more" adds this many
 
+// The long example does not fit on a phone, where it was cut off mid-word.
+const SEARCH_PLACEHOLDER = window.matchMedia("(max-width: 639px)").matches
+  ? "Search or ask AI"
+  : "Search, or ask: online coding workshops this weekend"
+
 export default function DiscoverPage({ onOpen }) {
   const { user } = useUser()
   const { profile } = user
@@ -100,6 +105,12 @@ export default function DiscoverPage({ onOpen }) {
           eligibility: getEligibility(opportunity, profile),
         })),
     [opportunities, profile]
+  )
+
+  // Types that have at least one open opportunity (empty types are hidden from the cards).
+  const availableCategories = useMemo(
+    () => (opportunities ? new Set(opportunities.filter((o) => !isClosed(o)).map((o) => o.category)) : null),
+    [opportunities]
   )
 
   // Normal feed: filter the scored list, then rank by relevance.
@@ -191,7 +202,7 @@ export default function DiscoverPage({ onOpen }) {
             setSearchTerm(event.target.value)
             setVisibleCount(PAGE_SIZE)
           }}
-          placeholder="Search, or ask: online coding workshops this weekend"
+          placeholder={SEARCH_PLACEHOLDER}
           aria-label="Search opportunities or ask the AI"
           className="h-11 pr-28 pl-9"
         />
@@ -206,7 +217,7 @@ export default function DiscoverPage({ onOpen }) {
         </Button>
       </form>
 
-      <CategoryCards selected={category} onSelect={handleCategory} />
+      <CategoryCards selected={category} onSelect={handleCategory} available={availableCategories} />
 
       <section className="space-y-4">
         {ai ? (
