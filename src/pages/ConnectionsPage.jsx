@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { createPost, deletePost, getConnectionPosts, toggleLike } from "@/api/connections"
 import { getOpportunities } from "@/api/opportunities"
 import ConnectionPost from "@/components/ConnectionPost"
+import PeoplePanel from "@/components/PeoplePanel"
 import PostComposer from "@/components/PostComposer"
 
 // A LinkedIn-style feed: write posts, and like, comment and reply on posts from your connections.
@@ -19,6 +20,12 @@ export default function ConnectionsPage({ onOpen }) {
       })
       .catch(() => setLoadError(true))
   }, [])
+
+  // Re-reads the feed (used after accepting an invitation, which adds that person's posts).
+  // The student's own posts are kept by the api, so nothing is lost.
+  async function reloadPosts() {
+    setPosts(await getConnectionPosts())
+  }
 
   async function handlePost({ text, opportunityId }) {
     const post = await createPost({ text, opportunityId })
@@ -51,35 +58,43 @@ export default function ConnectionsPage({ onOpen }) {
   const byId = Object.fromEntries(opportunities.map((o) => [o.id, o]))
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
+    <div className="mx-auto grid max-w-5xl grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <h1 className="sr-only">Connections</h1>
 
-      <PostComposer opportunities={opportunities} onPost={handlePost} />
+      {/* Feed */}
+      <div className="space-y-4">
+        <PostComposer opportunities={opportunities} onPost={handlePost} />
 
-      {loadError ? (
-        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-          Could not load the feed. Please try again.
-        </p>
-      ) : posts === null ? (
-        <p className="p-8 text-center text-sm text-muted-foreground">Loading...</p>
-      ) : posts.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-          Nothing here yet. Write the first post.
-        </p>
-      ) : (
-        posts.map((post) => (
-          <ConnectionPost
-            key={post.id}
-            post={post}
-            opportunity={post.opportunityId ? byId[post.opportunityId] : undefined}
-            now={now}
-            onLike={handleLike}
-            onOpen={onOpen}
-            onDelete={handleDelete}
-            onCommentCountChange={handleCommentCountChange}
-          />
-        ))
-      )}
+        {loadError ? (
+          <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+            Could not load the feed. Please try again.
+          </p>
+        ) : posts === null ? (
+          <p className="p-8 text-center text-sm text-muted-foreground">Loading...</p>
+        ) : posts.length === 0 ? (
+          <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+            Nothing here yet. Write the first post.
+          </p>
+        ) : (
+          posts.map((post) => (
+            <ConnectionPost
+              key={post.id}
+              post={post}
+              opportunity={post.opportunityId ? byId[post.opportunityId] : undefined}
+              now={now}
+              onLike={handleLike}
+              onOpen={onOpen}
+              onDelete={handleDelete}
+              onCommentCountChange={handleCommentCountChange}
+            />
+          ))
+        )}
+      </div>
+
+      {/* Side panel: stays in view while scrolling the feed on wide screens */}
+      <div className="lg:sticky lg:top-20 lg:self-start">
+        <PeoplePanel onConnectionsChange={reloadPosts} />
+      </div>
     </div>
   )
 }

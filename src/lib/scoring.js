@@ -80,3 +80,8 @@ export function costLabel(fee) {
   if (fee === 0) return "Free"
   return `₹${fee}`
 }
+
+// What a person has in common with the student: shared interests and shared skills.
+export function getSharedWithProfile(person, profile) {
+  return [...overlap(person.interests, profile.interests), ...overlap(person.skills, profile.skills)]
+}

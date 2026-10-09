@@ -19,6 +19,7 @@
 // ============================================================================
 
 import { getCurrentUser } from "@/api/auth"
+import { getConnectedIds } from "@/api/people"
 import { mockComments } from "@/data/mockComments"
 import { mockConnectionPosts } from "@/data/mockConnectionPosts"
 
@@ -58,9 +59,10 @@ function newId(prefix) {
 
 // Posts from the student's connections plus their own, newest first.
 export async function getConnectionPosts() {
+  const connected = await getConnectedIds()
   const liked = read(KEYS.liked)
   const comments = [...mockComments, ...read(KEYS.myComments)]
-  return [...read(KEYS.myPosts), ...mockConnectionPosts]
+  return [...read(KEYS.myPosts), ...mockConnectionPosts.filter((post) => connected.includes(post.author.id))]
     .map((post) => {
       const likedByMe = liked.includes(post.id)
       return {

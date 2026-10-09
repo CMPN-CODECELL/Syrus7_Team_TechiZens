@@ -18,6 +18,7 @@ The screens never talk to Supabase directly. They call two functions:
 - `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
 - `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
 - `src/api/connections.js`: `getConnectionPosts`, `createPost`, `deletePost`, `toggleLike`, `getComments`, `addComment`, `deleteComment`
+- `src/api/people.js`: `getConnectedIds`, `getSuggestions`, `sendConnectionRequest`, `withdrawConnectionRequest`, `getInvitations`, `acceptInvitation`, `ignoreInvitation`
 
 Today these return fake data. **Backend dev:** replace the inside of each function with the Supabase
 version, but keep the **function names and the returned shapes** (below). Then the screens keep working
@@ -152,6 +153,36 @@ deleteComment(commentId)                      // own comments only; also removes
 Limits used by the screens: post text up to 500 characters, comment text up to 300 (enforce them on the server too).
 Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_likes`, `comments`, all with Row Level Security
 (read posts from connections and yourself; delete only your own).
+
+**People and connection requests** (`src/api/people.js`; examples in `src/data/mockPeople.js`)
+
+```js
+// Person (never include contact details)
+{ id, name, college, year, interests, skills }      // year = profile numbers; interests and skills are lists of text
+
+// Suggestion = Person + a flag
+{ ...person, requestSent }                          // true if this student already asked to connect
+
+// Invitation = someone asked to connect with this student
+{ id, person, createdAt }
+```
+
+Functions (all async):
+
+```js
+getConnectedIds()                    // ids of the students this student is connected to
+getSuggestions()                     // people who are not connected and have not invited this student (the screen ranks them)
+sendConnectionRequest(personId)      // creates a pending request
+withdrawConnectionRequest(personId)  // cancels it
+getInvitations()                     // unanswered invitations received, newest first
+acceptInvitation(invitationId)       // makes the sender a connection (their posts then appear in the feed)
+ignoreInvitation(invitationId)       // declines it
+```
+
+A request becomes a connection only when the OTHER student accepts it (backend work; in the mock, sent requests just stay pending).
+Connecting does NOT share contact details. Those only come after double opt-in in the Squad Hub.
+`getConnectionPosts()` must only return posts from the student's connections and the student's own.
+Suggested table: `connections (user_id, other_user_id, status)` with status `pending` or `accepted`, with Row Level Security.
 
 ## Git workflow (the simple version)
 

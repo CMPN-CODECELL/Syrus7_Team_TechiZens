@@ -201,6 +201,8 @@ A LinkedIn-style timeline of activity posts from the students the user is connec
 - Post types: saved an opportunity, recommends an opportunity, looking for teammates, shared an update.
 - Students can write their own posts (optionally attaching an opportunity), like posts, comment, reply to comments,
   and delete their own posts and comments.
+- "People you may know" (ranked by shared interests and skills) with Connect, and invitations to Accept or Ignore.
+  The feed shows posts from connections and the student only. Connecting does not share contact details.
 - A post can embed an opportunity (opens its detail page).
 - It is a separate page from the Squad Hub (the Squad Hub is team matching around an opportunity).
 - Privacy still applies: no contact details in the feed (contacts only after double opt-in), and Nexus
