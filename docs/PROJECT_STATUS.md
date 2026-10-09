@@ -107,6 +107,7 @@ Smart ingestion display (Closed events and missing-details flags) is **done** (s
   - Google OAuth through Supabase; real `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser` in `src/api/auth.js`.
   - Tables: profiles, organizers, opportunities (shapes in CONTRIBUTING.md), RLS so students see only their own profile, seed data from `src/data/mockOpportunities.js`. Migrations `0001` through `0006`.
   - Real `getOpportunities` in `src/api/opportunities.js`.
+- **SQL written for every remaining swap point, NOT yet run in Supabase** (2026-10-09): migrations `0007` to `0016` create the tables, privacy rules (RLS, double opt-in `get_contact`) and mock-data seeds for saved, alerts, connections/people, posts/comments/likes and the Squad Hub. Tested on a local Postgres engine (78 checks). Full audit, table map and what each `src/api` function becomes: [SUPABASE_AUDIT.md](SUPABASE_AUDIT.md). To apply, paste `supabase/paste-all-0006-to-0016.sql` in the Supabase SQL Editor (this also runs the missing `0006`, which is why profile saving currently fails). The `src/api` files still use mock data until they are rewired.
 - **Remaining swap points to connect**:
   - Tables behind `src/api/saved.js` and `src/api/alerts.js` (shapes in CONTRIBUTING.md).
   - Tables behind `src/api/connections.js`: connections, posts, likes (shape in CONTRIBUTING.md).
