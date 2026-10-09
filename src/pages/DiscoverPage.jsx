@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ChevronDown, Search, Sparkles, X } from "lucide-react"
+import { ChevronDown, RefreshCw, Search, Sparkles, X } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import { searchWithAI } from "@/api/search"
 import AiSearchPanel from "@/components/AiSearchPanel"
@@ -29,12 +29,24 @@ export default function DiscoverPage({ onOpen }) {
   const [sortId, setSortId] = useState("match")
   const [showMoreFilters, setShowMoreFilters] = useState(false)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [refreshing, setRefreshing] = useState(false)
   // AI search: null = not used, otherwise { query, data } (data is null while it is thinking).
   const [ai, setAi] = useState(null)
 
   useEffect(() => {
     getOpportunities().then(setOpportunities).catch(() => setLoadError(true))
   }, [])
+
+  // Refresh button: load the latest listings again. If the new list comes back empty (for example the
+  // connection failed), keep showing the old one instead of wiping the page.
+  function refresh() {
+    setRefreshing(true)
+    setLoadError(false)
+    getOpportunities()
+      .then((latest) => setOpportunities((old) => (latest.length === 0 && old?.length ? old : latest)))
+      .catch(() => setLoadError(true))
+      .finally(() => setRefreshing(false))
+  }
 
   function toggleFilter(id) {
     setActiveFilters((current) =>
@@ -112,6 +124,12 @@ export default function DiscoverPage({ onOpen }) {
 
   const firstName = user.name.split(" ")[0]
   const categoryLabel = CATEGORIES.find((c) => c.id === category)?.label
+
+  // When the newest listing was last verified, e.g. "9 Oct, 4:40 pm" (empty while loading or with no listings).
+  const newestCheck = (opportunities ?? []).reduce((newest, o) => (o.lastVerified > newest ? o.lastVerified : newest), "")
+  const lastChecked = newestCheck
+    ? new Date(newestCheck).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })
+    : ""
 
   // "More filters" stays open while one of them is on, so an active filter is never hidden.
   const activeMoreCount = MORE_FILTERS.filter((f) => activeFilters.includes(f.id)).length
@@ -198,7 +216,20 @@ export default function DiscoverPage({ onOpen }) {
           </>
         ) : (
           <>
-            <h2 className="text-xl font-semibold">{categoryLabel ?? "For you"}</h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xl font-semibold">{categoryLabel ?? "For you"}</h2>
+              <div className="flex items-center gap-3">
+                {lastChecked && (
+                  <span className="text-xs text-muted-foreground" title="When the newest listing was last verified">
+                    Listings checked {lastChecked}
+                  </span>
+                )}
+                <Button size="sm" variant="outline" onClick={refresh} disabled={refreshing || opportunities === null}>
+                  <RefreshCw className={refreshing ? "animate-spin" : ""} />
+                  {refreshing ? "Refreshing..." : "Refresh"}
+                </Button>
+              </div>
+            </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap gap-2" role="group" aria-label="Filters">
