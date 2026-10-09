@@ -1,22 +1,22 @@
-import { CircleCheck, CircleX, ShieldCheck, TriangleAlert } from "lucide-react"
+import { Bookmark, BookmarkCheck, CircleCheck, CircleX, ShieldCheck, TriangleAlert } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import { CATEGORIES } from "@/data/constants"
+import { formatDate } from "@/lib/format"
+import { needsCheck } from "@/lib/ingestion"
 import { costLabel } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
-function formatDate(isoDate) {
-  return new Date(isoDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
-}
-
-// One small labelled value in the facts row.
+// One small labelled value in the facts row. An empty value is flagged as "Not listed".
 function Fact({ label, value }) {
   return (
     <div className="px-3 py-3 first:pl-5 last:pr-5">
       <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-0.5 truncate text-sm font-medium">{value}</p>
+      <p className="mt-0.5 truncate text-sm font-medium">
+        {value || <span className="font-normal text-muted-foreground italic">Not listed</span>}
+      </p>
     </div>
   )
 }
@@ -25,7 +25,7 @@ function Fact({ label, value }) {
 // so this component does not care where the numbers come from.
 // The card has 5 rows (top, title, facts, notes, footer). It uses a CSS subgrid so each row
 // lines up with the same row in neighbouring cards. See the grid in DiscoverPage.
-export default function OpportunityCard({ opportunity, relevance, reason, eligibility }) {
+export default function OpportunityCard({ opportunity, relevance, reason, eligibility, onOpen, saved, onToggleSave }) {
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
   return (
@@ -45,13 +45,13 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
           <Badge variant="outline" title="Relevance to you" className="tabular-nums">
             {relevance}%
           </Badge>
-          {opportunity.verified ? (
-            <Badge variant="secondary">
-              <ShieldCheck data-icon="inline-start" /> Verified
-            </Badge>
-          ) : (
+          {needsCheck(opportunity) ? (
             <Badge variant="destructive">
               <TriangleAlert data-icon="inline-start" /> Check details
+            </Badge>
+          ) : (
+            <Badge variant="secondary">
+              <ShieldCheck data-icon="inline-start" /> Verified
             </Badge>
           )}
         </div>
@@ -64,7 +64,7 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
 
       {/* Facts: three equal columns */}
       <div className="grid grid-cols-3 divide-x border-y">
-        <Fact label="Deadline" value={formatDate(opportunity.deadline)} />
+        <Fact label="Deadline" value={opportunity.deadline && formatDate(opportunity.deadline)} />
         <Fact label="Where" value={opportunity.location} />
         <Fact label="Fee" value={costLabel(opportunity.fee)} />
       </div>
@@ -93,8 +93,18 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
             </>
           )}
         </span>
-        <Button className="flex-1" variant="outline">
+        <Button className="flex-1" variant="outline" onClick={() => onOpen(opportunity.id)}>
           View
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-pressed={saved}
+          aria-label={saved ? "Remove from saved" : "Save for alerts"}
+          title={saved ? "Saved" : "Save"}
+          onClick={() => onToggleSave(opportunity.id)}
+        >
+          {saved ? <BookmarkCheck /> : <Bookmark />}
         </Button>
       </div>
     </Card>

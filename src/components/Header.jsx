@@ -1,11 +1,12 @@
-import { Bell, Compass, FileText, LogOut, UserRound, Users } from "lucide-react"
+import { Bell, Compass, LogOut, Network, UserRound, Users } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 
 const NAV_ITEMS = [
   { id: "discover", label: "Discover", icon: Compass },
-  { id: "cheatsheets", label: "Cheat Sheets", icon: FileText },
+  { id: "connections", label: "Connections", icon: Network },
   { id: "squads", label: "Squad Hub", icon: Users },
   { id: "alerts", label: "Alerts", icon: Bell },
   { id: "profile", label: "Profile", icon: UserRound },
@@ -13,6 +14,15 @@ const NAV_ITEMS = [
 
 export default function Header({ page, onNavigate }) {
   const { user, signOut } = useUser()
+  const { unreadCount } = useSaved()
+
+  // Small count bubble on the Alerts item.
+  const badge = (id) =>
+    id === "alerts" && unreadCount > 0 ? (
+      <span className="rounded-full bg-primary px-1.5 text-[0.65rem] leading-4 text-primary-foreground">
+        {unreadCount}
+      </span>
+    ) : null
   const initials = user.name
     .split(" ")
     .map((part) => part[0])
@@ -39,6 +49,7 @@ export default function Header({ page, onNavigate }) {
             >
               <item.icon />
               {item.label}
+              {badge(item.id)}
             </Button>
           ))}
         </nav>
@@ -64,6 +75,7 @@ export default function Header({ page, onNavigate }) {
           >
             <item.icon />
             {item.label}
+              {badge(item.id)}
           </Button>
         ))}
       </nav>
