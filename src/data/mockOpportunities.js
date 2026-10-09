@@ -1,31 +1,7 @@
-// MOCK DATA for the frontend demo.
-// Organizer names are real, but every opportunity below (titles, dates, fees, links,
-// eligibility) is made up for illustration. They are NOT real listings.
-// When the backend is ready, replace the exports with API / Supabase calls that
-// return the same shapes.
-
-export const CATEGORIES = [
-  { id: "courses", label: "Courses", singular: "Course" },
-  { id: "internships", label: "Internships", singular: "Internship" },
-  { id: "hackathons", label: "Hackathons", singular: "Hackathon" },
-  { id: "workshops", label: "Workshops", singular: "Workshop" },
-  { id: "competitions", label: "Competitions", singular: "Competition" },
-]
-
-export const INTEREST_OPTIONS = [
-  "Web Development",
-  "AI & Machine Learning",
-  "Data Science",
-  "Design",
-  "Cybersecurity",
-  "Mobile Apps",
-  "Cloud & DevOps",
-  "Robotics",
-  "Entrepreneurship",
-  "Finance",
-  "Sustainability",
-  "Social Impact",
-]
+// MOCK DATA for the frontend demo. Organizer names are real, but every opportunity below
+// (titles, dates, fees, links, eligibility) is made up for illustration. They are NOT real listings.
+// This file is only used by src/api/opportunities.js while there is no backend.
+// Delete it once Supabase returns real data.
 
 // Logos come from a public favicon service keyed by website. Set `logo` to your own
 // image (for example "/logos/iit-bombay.png" placed in the public folder) or to null
@@ -712,7 +688,7 @@ const rawOpportunities = [
 ]
 
 // Until real listings exist, the registration and source links point to the organizer's website.
-export const opportunities = rawOpportunities.map((opportunity) => ({
+export const mockOpportunities = rawOpportunities.map((opportunity) => ({
   registrationUrl: opportunity.organizer.website,
   sourceUrl: opportunity.organizer.website,
   ...opportunity,

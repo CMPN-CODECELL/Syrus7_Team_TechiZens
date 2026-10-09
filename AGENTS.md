@@ -321,6 +321,8 @@ Do not tightly couple components to mock data.
 
 Keep data structures clear and reusable.
 
+All backend access goes through `src/api/auth.js` and `src/api/opportunities.js`. Screens and components must never import Supabase directly. The data shapes are documented in `CONTRIBUTING.md`; do not change them without telling the team.
+
 ---
 
 ## AI Development Rule

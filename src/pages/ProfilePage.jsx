@@ -5,7 +5,7 @@ import BeginnerToggle from "@/components/BeginnerToggle"
 import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
-import { INTEREST_OPTIONS } from "@/data/opportunities"
+import { INTEREST_OPTIONS } from "@/data/constants"
 import { YEAR_OPTIONS } from "@/lib/scoring"
 
 const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figma", "SQL", "Linux"]

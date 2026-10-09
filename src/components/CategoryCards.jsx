@@ -1,6 +1,6 @@
 import { BookOpen, Briefcase, Code, Trophy, Wrench } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { CATEGORIES } from "@/data/opportunities"
+import { CATEGORIES } from "@/data/constants"
 
 const ICONS = {
   courses: BookOpen,

@@ -30,9 +30,10 @@ const COMING_SOON = {
 }
 
 function App() {
-  const { user } = useUser()
+  const { user, loading } = useUser()
   const [page, setPage] = useState("discover")
 
+  if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading...</div>
   if (!user) return <LoginPage />
   if (!user.onboarded) return <OnboardingPage />
 

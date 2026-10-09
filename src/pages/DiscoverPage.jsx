@@ -1,11 +1,12 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, Sparkles } from "lucide-react"
+import { getOpportunities } from "@/api/opportunities"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import CategoryCards from "@/components/CategoryCards"
 import OpportunityCard from "@/components/OpportunityCard"
 import { useUser } from "@/context/user-context"
-import { CATEGORIES, opportunities } from "@/data/opportunities"
+import { CATEGORIES } from "@/data/constants"
 import { getEligibility, getRelevance, isLowCost, isSustainability } from "@/lib/scoring"
 
 // The four POC filters.
@@ -20,9 +21,15 @@ export default function DiscoverPage() {
   const { user } = useUser()
   const { profile } = user
 
+  const [opportunities, setOpportunities] = useState(null) // null = still loading
+  const [loadError, setLoadError] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [category, setCategory] = useState(null)
   const [activeFilters, setActiveFilters] = useState([])
+
+  useEffect(() => {
+    getOpportunities().then(setOpportunities).catch(() => setLoadError(true))
+  }, [])
 
   function toggleFilter(id) {
     setActiveFilters((current) =>
@@ -33,7 +40,7 @@ export default function DiscoverPage() {
   const search = searchTerm.trim().toLowerCase()
 
   // Score every opportunity against the profile, filter, then rank by relevance.
-  const feed = opportunities
+  const feed = (opportunities ?? [])
     .map((opportunity) => ({
       opportunity,
       ...getRelevance(opportunity, profile),
@@ -103,7 +110,13 @@ export default function DiscoverPage() {
           })}
         </div>
 
-        {feed.length > 0 ? (
+        {loadError ? (
+          <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+            Could not load opportunities. Please try again.
+          </p>
+        ) : opportunities === null ? (
+          <p className="p-8 text-center text-sm text-muted-foreground">Loading...</p>
+        ) : feed.length > 0 ? (
           <div className="grid gap-x-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Each card spans 5 rows (subgrid) so sections line up across a row */}
             {feed.map(({ opportunity, relevance, reason, eligibility }) => (

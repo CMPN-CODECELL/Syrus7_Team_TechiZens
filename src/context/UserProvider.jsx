@@ -1,66 +1,47 @@
 import { useEffect, useState } from "react"
+import { getCurrentUser, saveUser, signInWithGoogle, signOut as apiSignOut } from "@/api/auth"
 import { UserContext } from "./user-context"
 
-const STORAGE_KEY = "nexus-user"
-
-// Student profile fields from the POC.
-const emptyProfile = {
-  skills: [],
-  interests: [],
-  isBeginner: false,
-  year: 2,
-  location: "",
-  budget: 500,
-}
-
-// Placeholder identity used until real Google OAuth (Supabase) exists.
-const demoAccount = {
-  name: "Demo Student",
-  email: "demo.student@example.com",
-}
-
-function loadUser() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) : null
-  } catch {
-    return null
-  }
-}
-
+// Keeps "who is logged in" in React state so every screen can read it with useUser().
+// All real work (login, saving) happens in src/api/auth.js, so this file does not
+// change when the backend does.
 export function UserProvider({ children }) {
-  const [user, setUser] = useState(loadUser)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true) // true until we know if someone is logged in
 
-  // Everything is saved in this browser only (no backend yet).
+  // On first load, check if a session already exists.
   useEffect(() => {
-    try {
-      if (user) localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-      else localStorage.removeItem(STORAGE_KEY)
-    } catch {
-      // Storage unavailable: the app still works for this session.
-    }
-  }, [user])
+    getCurrentUser().then((current) => {
+      setUser(current)
+      setLoading(false)
+    })
+  }, [])
 
-  // Mock "Sign in with Google". Replace with Supabase Google OAuth later.
-  function signIn() {
-    setUser({ ...demoAccount, onboarded: false, profile: emptyProfile })
+  async function signIn() {
+    setUser(await signInWithGoogle())
+  }
+
+  async function signOut() {
+    await apiSignOut()
+    setUser(null)
+  }
+
+  // Updates the screen straight away, then saves in the background.
+  function updateProfile(changes) {
+    const next = { ...user, profile: { ...user.profile, ...changes } }
+    setUser(next)
+    saveUser(next)
   }
 
   // Called when the step-by-step profile setup is finished.
   function completeOnboarding() {
-    setUser((current) => ({ ...current, onboarded: true }))
-  }
-
-  function signOut() {
-    setUser(null)
-  }
-
-  function updateProfile(changes) {
-    setUser((current) => ({ ...current, profile: { ...current.profile, ...changes } }))
+    const next = { ...user, onboarded: true }
+    setUser(next)
+    saveUser(next)
   }
 
   return (
-    <UserContext.Provider value={{ user, signIn, signOut, updateProfile, completeOnboarding }}>
+    <UserContext.Provider value={{ user, loading, signIn, signOut, updateProfile, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   )

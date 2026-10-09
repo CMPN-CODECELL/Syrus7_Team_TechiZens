@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import OrganizerLogo from "@/components/OrganizerLogo"
-import { CATEGORIES } from "@/data/opportunities"
+import { CATEGORIES } from "@/data/constants"
 import { costLabel } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
