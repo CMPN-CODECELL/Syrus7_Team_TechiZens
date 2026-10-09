@@ -24,14 +24,15 @@ cp .env.judges .env.local        # Windows (cmd): copy .env.judges .env.local
 npm run dev
 ```
 
-Open **http://localhost:5173** and click **Sign in with Google**.
+Open **http://localhost:5173** and click **Sign in with Google**. This is the **real Google login**, the same setup the team
+uses, so you get every feature, including your own saved items and Change Sentinel alerts.
 
-- `.env.judges` holds the **frontend** Supabase project URL and its public *anon* key, plus `VITE_DEMO_LOGIN=true`.
+- `.env.judges` holds the **frontend** Supabase project URL and its public key (the same values the team's own `.env.local` has).
   The anon key is public by design (it ships inside any web app's JavaScript); the database is protected by Row Level
   Security. It gives **read access to the public listings** (opportunities and organizers); everything personal needs a sign-in.
-- `VITE_DEMO_LOGIN=true` means the button signs you in as a **Demo Student** (no Google account needed), while the
-  opportunities are still read live from our database. To use real Google sign-in instead, delete that line (the Google
-  account must be allowed by our OAuth setup).
+- **No Google account, or Google sign-in is refused?** Open `.env.local`, remove the `#` in front of `VITE_DEMO_LOGIN=true`,
+  and restart `npm run dev`. The button then signs you in as a **Demo Student**, and the opportunities are still read live
+  from our database. Everything works except **Alerts** (empty) and saved items, which stay in your browser only.
 - Without `.env.local` the app starts but shows **no opportunities** (we deleted all mock listings on purpose).
 - The scraper's private `service_role` key is **not** in this repository, and never should be. Judges do not need it.
 
@@ -67,10 +68,10 @@ what it would save; saves nothing and needs no key).
    *People you may know*, invitations, and student profiles. No contact details are ever shown here.
 8. **Profile.** Edit your headline, About, interests, skills and location; the feed re-ranks.
 
-**About the alerts page.** Change Sentinel reads alerts from the database for a *signed-in* account, so with the demo
-login the Alerts page is empty. The mechanism is built and the database side was tested: when ingestion changes a listing's
-deadline, a database trigger writes an alert such as *Deadline: 23 Oct 2026 → 25 Oct 2026*, which a student who saved it
-sees on the Alerts page. We are happy to show it live.
+**About the alerts page.** Change Sentinel reads alerts from the database for a *signed-in Google* account (with the demo
+login fallback the Alerts page is empty). When ingestion changes a listing's deadline, a database trigger writes an alert
+such as *Deadline: 23 Oct 2026 → 25 Oct 2026*, which a student who saved that listing sees on the Alerts page. Alerts only
+appear after a listing actually changes, so right after setup the page can be empty; we are happy to show it live.
 
 ---
 
