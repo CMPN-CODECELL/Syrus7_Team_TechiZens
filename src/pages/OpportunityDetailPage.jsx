@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { ArrowLeft, Bookmark, BookmarkCheck, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert, Users } from "lucide-react"
+import { ArrowLeft, Bookmark, BookmarkCheck, CalendarX, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert, Users } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import { Badge } from "@/components/ui/badge"
@@ -17,15 +17,18 @@ import {
   formatDaysAgo,
   formatTeamSize,
 } from "@/lib/format"
+import { getMissingDetails, isClosed, needsCheck } from "@/lib/ingestion"
 import { costLabel, getEligibility, getRelevance } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
-// One label + value in the facts grid.
+// One label + value in the facts grid. An empty value is flagged as "Not listed".
 function Fact({ label, value }) {
   return (
     <div>
       <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-0.5 text-sm font-medium">{value}</p>
+      <p className="mt-0.5 text-sm font-medium">
+        {value || <span className="font-normal text-muted-foreground italic">Not listed</span>}
+      </p>
     </div>
   )
 }
@@ -68,6 +71,9 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
   const eligibility = getEligibility(opportunity, user.profile)
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
+  const closed = isClosed(opportunity)
+  const missing = getMissingDetails(opportunity)
+
   const isSaved = savedIds.includes(opportunity.id)
   const age = daysSince(opportunity.lastVerified, now)
   const isStale = age > STALE_AFTER_DAYS
@@ -88,25 +94,49 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="shrink-0 tabular-nums" title="Relevance to you">
-            {relevance}% match
-          </Badge>
+          <div className="flex shrink-0 items-center gap-1.5">
+            {closed && <Badge variant="destructive">Closed</Badge>}
+            <Badge variant="outline" className="tabular-nums" title="Relevance to you">
+              {relevance}% match
+            </Badge>
+          </div>
         </div>
 
         <h1 className="text-3xl font-semibold tracking-tight">{opportunity.title}</h1>
         <p className="text-muted-foreground">{opportunity.description}</p>
       </div>
 
-      {/* Trust layer: conflict warning */}
-      {!opportunity.verified && (
+      {/* Smart ingestion: the deadline has passed */}
+      {closed && (
+        <div role="status" className="flex gap-3 rounded-lg border bg-muted p-4 text-sm">
+          <CalendarX className="mt-0.5 size-4 shrink-0" />
+          <div>
+            <p className="font-medium">This opportunity is closed</p>
+            <p className="mt-0.5 text-muted-foreground">
+              {opportunity.deadline
+                ? `The deadline was ${formatDate(opportunity.deadline, { year: true })}.`
+                : "The event has ended."}{" "}
+              Open the source link to see if it was extended.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Trust layer: sources conflict, or details are missing */}
+      {needsCheck(opportunity) && (
         <div
           role="alert"
           className="flex gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm"
         >
           <TriangleAlert className="mt-0.5 size-4 shrink-0 text-destructive" />
-          <div>
+          <div className="space-y-0.5">
             <p className="font-medium text-destructive">Check these details before applying</p>
-            <p className="mt-0.5 text-muted-foreground">{opportunity.warning}</p>
+            {opportunity.warning && <p className="text-muted-foreground">{opportunity.warning}</p>}
+            {missing.length > 0 && (
+              <p className="text-muted-foreground">
+                Not listed: {missing.join(", ")}. Confirm on the organizer's website.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -114,7 +144,7 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
       {/* Facts */}
       <Card>
         <CardContent className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
-          <Fact label="Deadline" value={formatDate(opportunity.deadline, { year: true })} />
+          <Fact label="Deadline" value={opportunity.deadline && formatDate(opportunity.deadline, { year: true })} />
           <Fact label="Dates" value={formatDateRange(opportunity.startDate, opportunity.endDate)} />
           <Fact label="Format" value={opportunity.format} />
           <Fact label="Location" value={opportunity.location} />
@@ -177,14 +207,20 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
       {/* Handoff: Nexus never applies for the student */}
       <div className="space-y-2 border-t pt-6">
         <div className="flex flex-wrap items-center gap-3">
-          <a
-            href={opportunity.registrationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(buttonVariants({ size: "lg" }), "h-11 flex-1 text-base sm:flex-none sm:px-6")}
-          >
-            Apply on organizer's website <ExternalLink />
-          </a>
+          {closed || !opportunity.registrationUrl ? (
+            <Button size="lg" disabled className="h-11 flex-1 text-base sm:flex-none sm:px-6">
+              {closed ? "Applications closed" : "Registration link not listed"}
+            </Button>
+          ) : (
+            <a
+              href={opportunity.registrationUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(buttonVariants({ size: "lg" }), "h-11 flex-1 text-base sm:flex-none sm:px-6")}
+            >
+              Apply on organizer's website <ExternalLink />
+            </a>
+          )}
           <Button
             variant="outline"
             size="lg"
@@ -195,10 +231,12 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
             {isSaved ? <BookmarkCheck /> : <Bookmark />}
             {isSaved ? "Saved" : "Save"}
           </Button>
-          <Button variant="outline" size="lg" className="h-11 px-4 text-base" onClick={() => openSquad(opportunity.id)}>
-            <Users />
-            {opportunity.teamSize ? "Find teammates" : "Connect with others"}
-          </Button>
+          {!closed && (
+            <Button variant="outline" size="lg" className="h-11 px-4 text-base" onClick={() => openSquad(opportunity.id)}>
+              <Users />
+              {opportunity.teamSize ? "Find teammates" : "Connect with others"}
+            </Button>
+          )}
         </div>
         <p className="text-xs text-muted-foreground">
           You apply on their site. Nexus never applies for you.

@@ -10,6 +10,7 @@ import {
   sendConnectionRequest,
   withdrawConnectionRequest,
 } from "@/api/people"
+import DeadlineLine from "@/components/DeadlineLine"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import PersonLink from "@/components/PersonLink"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -236,7 +237,7 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
                       <div className="min-w-0 leading-tight">
                         <p className="truncate text-sm font-medium">{opportunity.title}</p>
                         <p className="truncate text-sm text-muted-foreground">
-                          {opportunity.organizer.name} · Deadline {formatDate(opportunity.deadline)}
+                          {opportunity.organizer.name} · <DeadlineLine opportunity={opportunity} />
                         </p>
                       </div>
                     </button>

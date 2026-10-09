@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { Bell, BookmarkX } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
+import DeadlineLine from "@/components/DeadlineLine"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSaved } from "@/context/saved-context"
-import { daysSince, formatDate, formatDaysAgo } from "@/lib/format"
+import { daysSince, formatDaysAgo } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
 const FIELD_LABELS = { deadline: "Deadline", fee: "Fee", rules: "Rules" }
@@ -127,7 +128,7 @@ export default function AlertsPage({ onOpen }) {
                     <div className="min-w-0 flex-1 leading-tight">
                       <p className="truncate text-sm font-medium">{opportunity.title}</p>
                       <p className="truncate text-sm text-muted-foreground">
-                        {opportunity.organizer.name} · Deadline {formatDate(opportunity.deadline)}
+                        {opportunity.organizer.name} · <DeadlineLine opportunity={opportunity} />
                       </p>
                     </div>
                     <Button variant="outline" onClick={() => onOpen(opportunity.id)}>

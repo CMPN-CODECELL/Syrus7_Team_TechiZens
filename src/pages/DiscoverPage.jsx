@@ -10,6 +10,7 @@ import OpportunityCard from "@/components/OpportunityCard"
 import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 import { CATEGORIES } from "@/data/constants"
+import { isClosed } from "@/lib/ingestion"
 import { getEligibility, getRelevance, isLowCost, isSustainability } from "@/lib/scoring"
 
 // The four POC filters.
@@ -65,8 +66,10 @@ export default function DiscoverPage({ onOpen }) {
   const search = searchTerm.trim().toLowerCase()
   const byId = Object.fromEntries((opportunities ?? []).map((o) => [o.id, o]))
 
-  // Normal feed: score every opportunity against the profile, filter, then rank by relevance.
+  // Normal feed: score every open opportunity against the profile, filter, then rank by relevance.
+  // Closed ones (deadline passed) stay out of the feed; they still open from saved items and posts.
   const feed = (opportunities ?? [])
+    .filter((opportunity) => !isClosed(opportunity))
     .map((opportunity) => ({
       opportunity,
       ...getRelevance(opportunity, profile),

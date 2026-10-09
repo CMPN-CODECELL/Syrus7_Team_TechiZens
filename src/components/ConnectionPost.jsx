@@ -1,12 +1,13 @@
 import { useState } from "react"
 import { MessageCircle, ThumbsUp, Trash2 } from "lucide-react"
 import CommentSection from "@/components/CommentSection"
+import DeadlineLine from "@/components/DeadlineLine"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import PersonLink from "@/components/PersonLink"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { formatDate, formatTimeAgo, personInitials } from "@/lib/format"
+import { formatTimeAgo, personInitials } from "@/lib/format"
 import { yearLabel } from "@/lib/scoring"
 
 // What each post type says next to the author's name.
@@ -80,7 +81,7 @@ export default function ConnectionPost({
             <div className="min-w-0 leading-tight">
               <p className="truncate font-medium">{opportunity.title}</p>
               <p className="truncate text-sm text-muted-foreground">
-                {opportunity.organizer.name} · Deadline {formatDate(opportunity.deadline)}
+                {opportunity.organizer.name} · <DeadlineLine opportunity={opportunity} />
               </p>
             </div>
           </button>

@@ -4,6 +4,7 @@ import { getOptIns } from "@/api/squads"
 import SquadPanel from "@/components/SquadPanel"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { isClosed } from "@/lib/ingestion"
 
 const ROLE_LABELS = { leader: "Leader", seeker: "Seeker", connect: "Connect" }
 
@@ -33,8 +34,10 @@ export default function SquadHubPage({ selectedId, onSelect, onOpen }) {
   if (opportunities === null) return <p className="p-8 text-center text-sm text-muted-foreground">Loading...</p>
 
   const selected = opportunities.find((o) => o.id === selectedId)
-  const teamOpportunities = opportunities.filter((o) => o.teamSize !== null)
-  const otherOpportunities = opportunities.filter((o) => o.teamSize === null)
+  // Closed opportunities are not offered, except one that is already selected (for example from "Your squads").
+  const choices = opportunities.filter((o) => !isClosed(o) || o.id === selectedId)
+  const teamOpportunities = choices.filter((o) => o.teamSize !== null)
+  const otherOpportunities = choices.filter((o) => o.teamSize === null)
   const mine = optIns.map((item) => ({ ...item, opportunity: opportunities.find((o) => o.id === item.opportunityId) })).filter((item) => item.opportunity)
 
   return (

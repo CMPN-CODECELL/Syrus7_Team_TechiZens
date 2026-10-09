@@ -34,7 +34,9 @@ export function getRelevance(opportunity, profile) {
 
   const interestFit = matchedInterests.length / Math.min(opportunity.interests.length, 2)
   const skillFit = matchedSkills.length / Math.max(opportunity.skills.length, 1)
-  const budgetFit = opportunity.fee <= profile.budget ? 1 : 0
+  // A fee that is not listed gets half credit: we cannot say it fits the budget, or that it does not.
+  const feeUnknown = opportunity.fee == null
+  const budgetFit = feeUnknown ? 0.5 : opportunity.fee <= profile.budget ? 1 : 0
   // Beginners prefer beginner-level opportunities; everyone else is neutral.
   const levelFit = !profile.isBeginner ? 1 : { Beginner: 1, Intermediate: 0.5, Advanced: 0 }[opportunity.level]
 
@@ -51,7 +53,8 @@ export function getRelevance(opportunity, profile) {
   else reasons.push("No match with your profile")
   if (profile.isBeginner && opportunity.level === "Beginner") reasons.push("beginner-friendly")
   if (profile.isBeginner && opportunity.level === "Advanced") reasons.push("advanced level")
-  if (budgetFit === 0) reasons.push("above your budget")
+  if (feeUnknown) reasons.push("fee not listed")
+  else if (budgetFit === 0) reasons.push("above your budget")
 
   return { relevance: Math.round(score), reason: reasons.join(" · ") }
 }
@@ -68,7 +71,7 @@ export function getEligibility(opportunity, profile) {
 }
 
 export function isLowCost(opportunity) {
-  return opportunity.fee <= LOW_COST_LIMIT
+  return opportunity.fee != null && opportunity.fee <= LOW_COST_LIMIT
 }
 
 export function isSustainability(opportunity) {
@@ -77,7 +80,9 @@ export function isSustainability(opportunity) {
   )
 }
 
+// "Free" or "₹300". Returns null when the fee is not listed (the screens show "Not listed").
 export function costLabel(fee) {
+  if (fee == null) return null
   if (fee === 0) return "Free"
   return `₹${fee}`
 }

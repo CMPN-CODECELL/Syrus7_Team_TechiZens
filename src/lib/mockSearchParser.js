@@ -7,6 +7,7 @@
 // findMatches(opportunities, criteria, profile) -> { results, droppedKeys }
 
 import { CITIES } from "@/data/cities"
+import { isClosed } from "@/lib/ingestion"
 import { getEligibility, getRelevance, getSharedWithProfile, LOW_COST_LIMIT } from "@/lib/scoring"
 
 const escape = (word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
@@ -164,6 +165,7 @@ const DROP_ORDER = ["date", "deadlineWithin", "location", "keywords", "eligibleO
 
 function matches(opportunity, criteria, active, profile) {
   if (active.has("fee")) {
+    if (opportunity.fee == null) return false // fee not listed: we cannot say it fits
     const { type, value } = criteria.fee
     if (type === "free" && opportunity.fee !== 0) return false
     if (type === "low" && opportunity.fee > LOW_COST_LIMIT) return false
@@ -173,7 +175,7 @@ function matches(opportunity, criteria, active, profile) {
   if (active.has("categories") && !criteria.categories.ids.includes(opportunity.category)) return false
   if (active.has("level") && opportunity.level !== criteria.level.value) return false
   if (active.has("topics") && !opportunity.interests.some((i) => criteria.topics.interests.includes(i))) return false
-  if (active.has("location") && opportunity.location.toLowerCase() !== criteria.location.city.toLowerCase()) return false
+  if (active.has("location") && opportunity.location?.toLowerCase() !== criteria.location.city.toLowerCase()) return false
   if (active.has("team") && (criteria.team.value === "solo") !== (opportunity.teamSize === null)) return false
   if (active.has("eligibleOnly") && !getEligibility(opportunity, profile).qualified) return false
   if (active.has("keywords")) {
@@ -192,14 +194,15 @@ function matches(opportunity, criteria, active, profile) {
   }
   if (active.has("deadlineWithin")) {
     const limit = toIso(addDays(new Date(), criteria.deadlineWithin.days))
-    if (opportunity.deadline > limit || opportunity.deadline < toIso(new Date())) return false
+    if (!opportunity.deadline || opportunity.deadline > limit || opportunity.deadline < toIso(new Date())) return false
   }
   return true
 }
 
 // Finds the opportunities that fit. If none fit everything, parts of the request are dropped
 // one by one (see DROP_ORDER) until something fits. Returns the ranked results and what was dropped.
-export function findMatches(opportunities, criteria, profile) {
+export function findMatches(allOpportunities, criteria, profile) {
+  const opportunities = allOpportunities.filter((o) => !isClosed(o)) // closed events are never suggested
   const keys = ["fee", "format", "categories", "level", "topics", "location", "team", "eligibleOnly", "keywords", "date", "deadlineWithin"].filter(
     (key) => criteria[key]
   )
@@ -228,7 +231,7 @@ export function findMatches(opportunities, criteria, profile) {
         reason: [...labels, ...(shared.length > 0 ? [`Fits you: ${shared.join(", ")}`] : [])].join(" · "),
       }
     })
-    .sort((a, b) => b.relevance - a.relevance || a.opportunity.deadline.localeCompare(b.opportunity.deadline))
+    .sort((a, b) => b.relevance - a.relevance || (a.opportunity.deadline ?? "9999").localeCompare(b.opportunity.deadline ?? "9999"))
 
   return { results, droppedKeys, keys }
 }

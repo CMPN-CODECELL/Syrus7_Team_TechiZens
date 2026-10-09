@@ -64,9 +64,9 @@ If a shape needs to change, tell the other person first, because screens depend 
   organizer: { name, type, website, logo },   // type: College | Company | Startup | Platform. logo may be null
   format,                    // "Online" | "In-person" | "Hybrid"
   location,
-  fee,                       // INR, 0 = free
+  fee,                       // INR, 0 = free, null = not listed
   startDate, endDate,        // "YYYY-MM-DD" or null (self-paced)
-  deadline,                  // "YYYY-MM-DD"
+  deadline,                  // "YYYY-MM-DD", or null = not listed (see "Missing details" below)
   level,                     // "Beginner" | "Intermediate" | "Advanced"
   interests, skills,         // lists of text
   teamSize,                  // { min, max } or null
@@ -77,6 +77,18 @@ If a shape needs to change, tell the other person first, because screens depend 
   warning,                   // text explaining why not verified, or null
 }
 ```
+
+**Missing details and Closed events (smart ingestion, POC 1).** These fields may be `null` when the organizer never
+listed them: `deadline`, `fee`, `location`, `format`, `theme` and `registrationUrl`. Send `null`, not `""`, `0` or a
+made-up value (`fee: 0` means **Free**, so an unknown fee must be `null`). The screens show "Not listed", add a
+"Check details" flag, and list what is missing on the detail page. `startDate`/`endDate` = `null` still means
+self-paced and `teamSize` = `null` still means individual; those are not "missing".
+
+An opportunity is **Closed** when its `deadline` is before today (or, with no deadline, its `endDate`). The frontend works
+this out itself (`src/lib/ingestion.js`), so the backend does **not** need a `closed` field and should keep returning
+expired events. Closed ones stay out of the Discover feed and the Squad Hub list, but still open from the Saved list,
+posts and profiles, with a disabled Apply button. The real AI search (`searchWithAI`) should leave closed events out too.
+Merging cross-posted duplicates is a backend job; the frontend just shows one record.
 
 **Squad Hub** (`src/api/squads.js`; examples in `src/data/mockSquads.js`). The full shapes are written at the top of that file.
 

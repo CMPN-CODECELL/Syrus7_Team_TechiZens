@@ -96,4 +96,22 @@ export const mockConnectionPosts = [
     createdAt: "2026-10-03T19:50:00+05:30",
     likeCount: 6,
   },
+  {
+    id: "post-11",
+    author: { id: "u-2", name: "Aarav Mehta", college: "IIT Madras", year: 3 },
+    type: "update",
+    text: "Went to this one last week. A good first look at testing APIs.",
+    opportunityId: "opp-28",
+    createdAt: "2026-10-02T18:00:00+05:30",
+    likeCount: 3,
+  },
+  {
+    id: "post-12",
+    author: { id: "u-1", name: "Priya Nair", college: "BITS Pilani", year: 2 },
+    type: "saved",
+    text: null,
+    opportunityId: "opp-30",
+    createdAt: "2026-10-02T09:30:00+05:30",
+    likeCount: 1,
+  },
 ]
