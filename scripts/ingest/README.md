@@ -52,7 +52,8 @@ GitHub pauses them after 60 days without repository activity.
 ## Rules it follows
 
 - A detail Devpost does not give is `null`, never `""` or `0`. The app then shows "Not listed" and "Check details".
-  Exception (product owner decision, 2026-10-09): Devpost gives no entry fee, so `fee` is set to 0 (Free) for Devpost rows.
+  The fee is still stored (Devpost rows 0, Unstop rows 0 when not paid, otherwise null) but the app does not show or check it:
+  prices were removed on 2026-10-09.
 - Invite-only Devpost hackathons are skipped. Unstop jobs and scholarships are not read (not learning opportunities).
 - Unstop does not give the event start date, only the registration window and an end date. `start_date` stays null and the app
   shows "Until <end date>". Level is guessed from the title (beginner/basic/intro, advanced) and is Intermediate otherwise.

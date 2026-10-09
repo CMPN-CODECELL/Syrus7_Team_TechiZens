@@ -184,7 +184,7 @@ export default function DiscoverPage({ onOpen }) {
             setSearchTerm(event.target.value)
             setVisibleCount(PAGE_SIZE)
           }}
-          placeholder="Search, or ask: free online coding workshops this weekend"
+          placeholder="Search, or ask: online coding workshops this weekend"
           aria-label="Search opportunities or ask the AI"
           className="h-11 pr-28 pl-9"
         />

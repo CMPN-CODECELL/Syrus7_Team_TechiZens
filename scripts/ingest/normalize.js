@@ -131,8 +131,7 @@ export function normalizeDevpost(raw, now = new Date()) {
     organizer_id: organizer.id,
     format,
     location,
-    // Devpost does not list an entry fee. Devpost hackathons are free to enter, so Free (0) is used (decided by
-    // the product owner, 2026-10-09). Other sources must keep an unknown fee as null.
+    // Devpost does not list an entry fee; Free (0) is stored. The app does not show or check prices (removed 2026-10-09).
     fee: 0,
     start_date: dates?.startDate ?? null,
     end_date: dates?.endDate ?? null,
@@ -155,8 +154,8 @@ export function normalizeDevpost(raw, now = new Date()) {
   return { opportunity, organizer }
 }
 
-// The same list the app checks in src/lib/ingestion.js (deadline, fee, location, format, theme, link).
+// The same list the app checks in src/lib/ingestion.js (deadline, location, format, theme, link). The fee is not checked: prices are not shown.
 export function findMissingDetails(row) {
-  const required = ["deadline", "fee", "location", "format", "theme", "registration_url"]
+  const required = ["deadline", "location", "format", "theme", "registration_url"]
   return required.filter((key) => row[key] == null || row[key] === "")
 }

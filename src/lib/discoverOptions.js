@@ -2,13 +2,12 @@
 
 import { isoDaysFromToday, needsCheck, todayIso } from "@/lib/ingestion"
 import { cityOf } from "@/lib/location"
-import { isLowCost, isSustainability } from "@/lib/scoring"
+import { isSustainability } from "@/lib/scoring"
 
-// The four POC filters. Each test gets the opportunity and the student's profile.
+// The POC filters (the Free / Low-Cost one was removed by the product owner on 2026-10-09: prices are not tracked). Each test gets the opportunity and the student's profile.
 export const FILTERS = [
   { id: "beginner", label: "Beginner-Friendly", test: (o) => o.level === "Beginner" },
   { id: "online", label: "Online", test: (o) => o.format === "Online" },
-  { id: "lowCost", label: "Free / Low-Cost", test: isLowCost },
   { id: "sustainability", label: "Sustainability & Social Impact", test: isSustainability },
 ]
 
@@ -42,11 +41,5 @@ export const SORTS = [
     label: "Deadline: latest",
     compare: (a, b) =>
       (b.opportunity.deadline ?? "").localeCompare(a.opportunity.deadline ?? "") || byRelevance(a, b),
-  },
-  {
-    id: "fee",
-    label: "Fee: low to high",
-    compare: (a, b) =>
-      (a.opportunity.fee ?? Infinity) - (b.opportunity.fee ?? Infinity) || byRelevance(a, b) || byDeadline(a, b),
   },
 ]

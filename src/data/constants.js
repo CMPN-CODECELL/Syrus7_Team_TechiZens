@@ -36,5 +36,4 @@ export const EMPTY_PROFILE = {
   isBeginner: false,
   year: 2, // see YEAR_OPTIONS in src/lib/scoring.js
   location: "",
-  budget: 500, // INR
 }

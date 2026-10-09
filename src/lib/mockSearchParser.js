@@ -9,7 +9,7 @@
 import { ALL_CITIES } from "@/data/cities"
 import { isClosed } from "@/lib/ingestion"
 import { cityOf } from "@/lib/location"
-import { getEligibility, getRelevance, getSharedWithProfile, LOW_COST_LIMIT } from "@/lib/scoring"
+import { getEligibility, getRelevance, getSharedWithProfile } from "@/lib/scoring"
 
 const escape = (word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 // Whole-word match for any of the words (plural "s" allowed for single words).
@@ -65,15 +65,10 @@ export function parseQuery(text, { profile, today = new Date() }) {
   const criteria = { text }
   const dow = today.getDay() // 0 = Sunday
 
-  // Money
-  let match
-  if ((match = take(/\b(?:under|below|less than|up to|upto|within|max|maximum)\s*(?:₹|rs\.?|inr)?\s*(\d+)/))) {
-    criteria.fee = { type: "max", value: Number(match[1]), label: `Under ₹${match[1]}` }
-  } else if (take(/\bfree\b|\bno fee\b|\bwithout fee\b/)) {
-    criteria.fee = { type: "free", label: "Free" }
-  } else if (take(/\b(?:cheap|low[- ]cost|affordable|budget|inexpensive)\b/)) {
-    criteria.fee = { type: "low", label: "Low cost" }
-  }
+  // Money: prices are not tracked. Price words are understood but not used to filter (the answer says so).
+  const pricePhrase = take(/\b(?:under|below|less than|up to|upto|max|maximum)\s*(?:₹|rs\.?|inr)\s*\d+/)
+  const priceWord = take(/\b(?:free|no fee|without fee|paid|cheap|low[- ]cost|affordable|inexpensive|budget)\b/)
+  if (pricePhrase || priceWord) criteria.priceIgnored = true
 
   // Format
   if (take(/\b(?:online|remote|remotely|virtual|virtually|from home)\b/)) criteria.format = { value: "Online", label: "Online" }
@@ -162,16 +157,9 @@ export function parseQuery(text, { profile, today = new Date() }) {
 
 // The order in which parts of a request are dropped when nothing matches all of it.
 // Dates and places go first; the topic is dropped last and the type of opportunity never is.
-const DROP_ORDER = ["date", "deadlineWithin", "location", "keywords", "eligibleOnly", "team", "level", "format", "fee", "topics"]
+const DROP_ORDER = ["date", "deadlineWithin", "location", "keywords", "eligibleOnly", "team", "level", "format", "topics"]
 
 function matches(opportunity, criteria, active, profile) {
-  if (active.has("fee")) {
-    if (opportunity.fee == null) return false // fee not listed: we cannot say it fits
-    const { type, value } = criteria.fee
-    if (type === "free" && opportunity.fee !== 0) return false
-    if (type === "low" && opportunity.fee > LOW_COST_LIMIT) return false
-    if (type === "max" && opportunity.fee > value) return false
-  }
   if (active.has("format") && opportunity.format !== criteria.format.value) return false
   if (active.has("categories") && !criteria.categories.ids.includes(opportunity.category)) return false
   if (active.has("level") && opportunity.level !== criteria.level.value) return false
@@ -204,7 +192,7 @@ function matches(opportunity, criteria, active, profile) {
 // one by one (see DROP_ORDER) until something fits. Returns the ranked results and what was dropped.
 export function findMatches(allOpportunities, criteria, profile) {
   const opportunities = allOpportunities.filter((o) => !isClosed(o)) // closed events are never suggested
-  const keys = ["fee", "format", "categories", "level", "topics", "location", "team", "eligibleOnly", "keywords", "date", "deadlineWithin"].filter(
+  const keys = ["format", "categories", "level", "topics", "location", "team", "eligibleOnly", "keywords", "date", "deadlineWithin"].filter(
     (key) => criteria[key]
   )
   const active = new Set(keys)

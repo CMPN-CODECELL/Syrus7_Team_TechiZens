@@ -62,7 +62,7 @@ Opportunity information includes:
 - Deadlines
 - Format
 - Location
-- Fees
+- Fees (not shown in the app since 2026-10-09: see "Price removed" below)
 - Team limits
 - Registration link
 
@@ -135,6 +135,15 @@ Example:
 "free online coding workshops this weekend"
 
 Each result should explain its relevance.
+
+---
+
+### Price removed (product owner decision, 2026-10-09)
+
+Prices are not mentioned reliably on the source sites, so the app does not show or use them. The detail page shows
+"Fee: Check the organizer's website"; cards show no price. Removed because of this: the Free/Low-Cost filter, the budget
+question (onboarding and Profile), budget in the relevance score, the fee sort, and fee alerts. The `fee` column stays in the
+database and is simply unused. Wherever the lists below still mention Fees, Budget or Free/Low-Cost, they are removed.
 
 ---
 

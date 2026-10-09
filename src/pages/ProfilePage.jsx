@@ -21,11 +21,6 @@ export default function ProfilePage() {
   const headline = profile.headline ?? ""
   const about = profile.about ?? ""
 
-  // Number inputs: keep the field empty-friendly, store a number.
-  function setNumber(field) {
-    return (event) => updateProfile({ [field]: Number(event.target.value) || 0 })
-  }
-
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       {/* How you appear: the same layout as other students' profiles */}
@@ -147,18 +142,6 @@ export default function ProfilePage() {
               id="location"
               value={profile.location}
               onChange={(location) => updateProfile({ location })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="budget">Budget (₹)</Label>
-            <Input
-              id="budget"
-              type="number"
-              min="0"
-              step="50"
-              value={profile.budget}
-              onChange={setNumber("budget")}
             />
           </div>
         </CardContent>

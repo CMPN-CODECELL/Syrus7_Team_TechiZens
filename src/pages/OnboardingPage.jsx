@@ -11,12 +11,6 @@ import { YEAR_OPTIONS } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
 const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figma", "SQL", "Linux"]
-const BUDGET_OPTIONS = [
-  { value: 0, label: "Free only" },
-  { value: 500, label: "Up to ₹500" },
-  { value: 1000, label: "Up to ₹1,000" },
-  { value: 5000, label: "Any" },
-]
 
 const XP_PER_STEP = 10
 
@@ -100,18 +94,6 @@ export default function OnboardingPage() {
         <LocationPicker
           value={profile.location}
           onChange={(location) => updateProfile({ location })}
-        />
-      ),
-    },
-    {
-      title: "What's your budget?",
-      hint: "Per opportunity.",
-      canContinue: true,
-      content: (
-        <ChoiceGrid
-          options={BUDGET_OPTIONS}
-          value={profile.budget}
-          onChange={(budget) => updateProfile({ budget })}
         />
       ),
     },

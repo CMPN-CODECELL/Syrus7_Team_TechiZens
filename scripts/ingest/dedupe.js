@@ -15,6 +15,9 @@ function sameEvent(a, b) {
   if (monthA && monthB && monthA !== monthB) return false
   // Generic titles ("HR Internship") are common: on one source, two organizers means two events.
   if (a.source === b.source && a.organizer_id !== b.organizer_id) return false
+  // Same source, same organizer, different deadline: a repeated session, not a repost. Only different
+  // sources can "disagree" about one event's deadline (that is what the conflict warning is for).
+  if (a.source === b.source && a.deadline && b.deadline && a.deadline !== b.deadline) return false
   return a.category === b.category
 }
 

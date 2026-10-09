@@ -1,7 +1,7 @@
 // ============================================================================
 // SWAP POINT: conversational AI search (owner: backend / Supabase teammate)
 //
-// Understands a plain-English request such as "free online coding workshops this weekend",
+// Understands a plain-English request such as "online coding workshops this weekend",
 // finds matching opportunities, and explains why each one is a good result.
 // Right now this is a MOCK: a simple rule-based reader (src/lib/mockSearchParser.js).
 // To go live, replace the body with a call to a backend function (for example a Supabase
@@ -29,12 +29,18 @@ export async function searchWithAI({ query, profile }) {
 
   let message = null
   if (keys.length === 0) {
-    message = "I couldn't pick out anything to search for. Try something like \"free online workshops for beginners\"."
+    message = "I couldn't pick out anything to search for. Try something like \"online workshops for beginners\"."
   } else if (results.length === 0) {
     message = "Nothing matches that yet. Try fewer details."
   } else if (droppedKeys.length > 0) {
     const dropped = droppedKeys.map((key) => criteria[key].label.toLowerCase()).join(", ")
     message = `Nothing matched everything, so I ignored: ${dropped}.`
+  }
+
+  // Prices are not tracked, so a price in the request was left out of the search.
+  if (criteria.priceIgnored) {
+    const note = "Prices are not tracked here, so I ignored the price. Check the organizer's website for the fee."
+    message = message ? `${message} ${note}` : note
   }
 
   return {

@@ -1,8 +1,6 @@
 // Relevance and eligibility are separate (POC "Decoupled Scoring").
 // These are plain functions so they can later be replaced by backend results.
 
-export const LOW_COST_LIMIT = 500 // INR
-
 // Values are ordered so that a higher number means further along (used for eligibility).
 export const YEAR_OPTIONS = [
   { value: -2, label: "Class 10th" },
@@ -34,9 +32,9 @@ export function overlap(a, b) {
 //                    so an opportunity with no skills is not punished for it)
 // An opportunity that says nothing about its topic gets a neutral 40%: below a real partial
 // match (50%), above a clear mismatch (0%).
-// Step 2, practical fit: the topic score is reduced when the opportunity is over your budget
-// (x0.5) or, for beginners, too advanced (Intermediate x0.85, Advanced x0.6). An unlisted fee
-// changes nothing. Free or beginner-level never adds points; it only avoids a reduction.
+// Step 2, practical fit: for beginners the topic score is reduced when the opportunity is too
+// advanced (Intermediate x0.85, Advanced x0.6). Beginner-level never adds points; it only avoids
+// a reduction. Prices are not tracked, so the fee plays no part.
 // The result is 10 to 100, so a card never shows 0%. Weekly hours will come back with the
 // team-building section.
 
@@ -44,7 +42,6 @@ const INTEREST_SHARE = 0.75
 const SKILL_SHARE = 0.25
 const UNKNOWN_TOPIC_FIT = 0.4
 const MIN_SCORE = 10
-const OVER_BUDGET_FACTOR = 0.5
 const LEVEL_FACTOR_FOR_BEGINNERS = { Beginner: 1, Intermediate: 0.85, Advanced: 0.6 }
 
 // Words that suggest an interest. Used only to read the title and theme of opportunities that
@@ -111,11 +108,9 @@ export function getRelevance(opportunity, profile) {
   const topicFit = skillFit == null ? interestFit : INTEREST_SHARE * interestFit + SKILL_SHARE * skillFit
 
   // Step 2: practical fit. Only known facts reduce the score.
-  const overBudget = opportunity.fee != null && profile.budget != null && opportunity.fee > profile.budget
-  const budgetFactor = overBudget ? OVER_BUDGET_FACTOR : 1
   const levelFactor = profile.isBeginner ? (LEVEL_FACTOR_FOR_BEGINNERS[opportunity.level] ?? 1) : 1
 
-  const raw = MIN_SCORE + (100 - MIN_SCORE) * topicFit * budgetFactor * levelFactor
+  const raw = MIN_SCORE + (100 - MIN_SCORE) * topicFit * levelFactor
   const relevance = Math.min(100, Math.max(MIN_SCORE, Math.round(raw)))
 
   // Short, plain reasons so cards stay uncluttered.
@@ -127,8 +122,6 @@ export function getRelevance(opportunity, profile) {
   else reasons.push("No match with your profile")
   if (profile.isBeginner && opportunity.level === "Beginner") reasons.push("beginner-friendly")
   if (profile.isBeginner && opportunity.level === "Advanced") reasons.push("advanced level")
-  if (opportunity.fee == null) reasons.push("fee not listed")
-  else if (overBudget) reasons.push("above your budget")
 
   return { relevance, reason: reasons.join(" · ") }
 }
@@ -144,21 +137,10 @@ export function getEligibility(opportunity, profile) {
   return { qualified: true, reason: "" }
 }
 
-export function isLowCost(opportunity) {
-  return opportunity.fee != null && opportunity.fee <= LOW_COST_LIMIT
-}
-
 export function isSustainability(opportunity) {
   return opportunity.interests.some(
     (interest) => interest === "Sustainability" || interest === "Social Impact"
   )
-}
-
-// "Free" or "₹300". Returns null when the fee is not listed (the screens show "Not listed").
-export function costLabel(fee) {
-  if (fee == null) return null
-  if (fee === 0) return "Free"
-  return `₹${fee}`
 }
 
 // What a person has in common with the student: shared interests and shared skills.

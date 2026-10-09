@@ -18,7 +18,7 @@ import {
   formatTeamSize,
 } from "@/lib/format"
 import { getMissingDetails, isClosed, needsCheck } from "@/lib/ingestion"
-import { costLabel, getEligibility, getRelevance } from "@/lib/scoring"
+import { getEligibility, getRelevance } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
 // One label + value in the facts grid. An empty value is flagged as "Not listed".
@@ -148,7 +148,7 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
           <Fact label="Dates" value={formatDateRange(opportunity.startDate, opportunity.endDate)} />
           <Fact label="Format" value={opportunity.format} />
           <Fact label="Location" value={opportunity.location} />
-          <Fact label="Fee" value={costLabel(opportunity.fee)} />
+          <Fact label="Fee" value="Check the organizer's website" />
           <Fact label="Team" value={formatTeamSize(opportunity.teamSize)} />
           <Fact label="Level" value={opportunity.level} />
           <Fact label="Theme" value={opportunity.theme} />
@@ -240,7 +240,7 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
         </div>
         <p className="text-xs text-muted-foreground">
           You apply on their site. Nexus never applies for you.
-          {isSaved && " We'll alert you if the deadline, fee or rules change."}
+          {isSaved && " We'll alert you if the deadline or rules change."}
         </p>
       </div>
     </div>

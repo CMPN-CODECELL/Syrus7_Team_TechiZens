@@ -5,7 +5,7 @@
 // Preserves the User data shape documented in CONTRIBUTING.md.
 //
 // A "user" looks like:
-//   { name, email, onboarded: boolean, profile: { headline, about, skills, interests, isBeginner, year, location, budget } }
+//   { name, email, onboarded: boolean, profile: { headline, about, skills, interests, isBeginner, year, location } }
 // (older saved users may not have headline / about yet; treat them as empty text)
 // ============================================================================
 
@@ -37,7 +37,6 @@ function formatUser(profileRow, authUser) {
     isBeginner: profileRow?.is_beginner ?? EMPTY_PROFILE.isBeginner,
     year: profileRow?.year ?? EMPTY_PROFILE.year,
     location: profileRow?.location ?? EMPTY_PROFILE.location,
-    budget: profileRow?.budget ?? EMPTY_PROFILE.budget,
   }
 
   return {
@@ -97,7 +96,6 @@ export async function getCurrentUser() {
         is_beginner: user.profile.isBeginner,
         year: user.profile.year,
         location: user.profile.location,
-        budget: user.profile.budget,
       })
     }
 
@@ -185,7 +183,6 @@ export async function saveUser(user) {
       is_beginner: Boolean(user.profile?.isBeginner),
       year: user.profile?.year ?? 2,
       location: user.profile?.location || "",
-      budget: user.profile?.budget ?? 500,
       updated_at: new Date().toISOString(),
     })
 

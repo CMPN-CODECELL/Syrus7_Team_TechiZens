@@ -62,7 +62,7 @@ export default function AlertsPage({ onOpen }) {
           {alerts.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
               <Bell className="size-5" />
-              <p>No alerts yet. Save an opportunity and we'll tell you when its deadline, fee or rules change.</p>
+              <p>No alerts yet. Save an opportunity and we'll tell you when its deadline or rules change.</p>
             </div>
           ) : (
             <div className="space-y-3">

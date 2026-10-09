@@ -1,7 +1,7 @@
 // ============================================================================
 // SWAP POINT: Change Sentinel alerts
 //
-// In-app alerts that say exactly what changed in a SAVED opportunity's deadline, fee or rules.
+// In-app alerts that say exactly what changed in a SAVED opportunity's deadline or rules (fee alerts are not shown: prices are not tracked).
 // Signed in with Supabase: read from the `my_alerts` view (already limited to the student's saved
 // opportunities, newest first). A database trigger adds a row whenever the ingestion changes a deadline
 // or fee. "Read" is kept in the `alert_reads` table. Demo mode (no Supabase keys): there are no alerts.
@@ -32,7 +32,7 @@ export async function getAlerts() {
     console.error("Could not load alerts:", error.message)
     return []
   }
-  return data.map((row) => ({
+  return data.filter((row) => row.field !== "fee").map((row) => ({
     id: row.id,
     opportunityId: row.opportunity_id,
     field: row.field,

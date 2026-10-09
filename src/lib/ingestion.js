@@ -29,14 +29,13 @@ export function isClosed(opportunity, today = todayIso()) {
 // listed here on purpose: they mean "self-paced" and "individual".
 const REQUIRED_DETAILS = [
   { key: "deadline", label: "deadline" },
-  { key: "fee", label: "fee" },
   { key: "location", label: "location" },
   { key: "format", label: "format" },
   { key: "theme", label: "theme" },
   { key: "registrationUrl", label: "registration link" },
 ]
 
-// Names of the required details that are empty, e.g. ["deadline", "fee"]. Note: a fee of 0 is "Free", not missing.
+// Names of the required details that are empty, e.g. ["deadline", "location"]. The fee is not listed here: prices are not shown in the app.
 export function getMissingDetails(opportunity) {
   return REQUIRED_DETAILS.filter(({ key }) => opportunity[key] == null || opportunity[key] === "").map(
     ({ label }) => label

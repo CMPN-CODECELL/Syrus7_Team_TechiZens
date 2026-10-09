@@ -49,7 +49,6 @@ If a shape needs to change, tell the other person first, because screens depend 
     isBeginner: false,
     year: 2,                 // -2 = Class 10th ... 0 = Class 12th, 1-3 = years, 4 = Final year, 5 = Graduated
     location: "Delhi, India", // "City, Country", "" if not chosen yet (an old value like "Delhi" counts as India)
-    budget: 500,             // INR per opportunity
   },
 }
 ```
@@ -64,7 +63,7 @@ If a shape needs to change, tell the other person first, because screens depend 
   organizer: { name, type, website, logo },   // type: College | Company | Startup | Platform. logo may be null
   format,                    // "Online" | "In-person" | "Hybrid"
   location,
-  fee,                       // INR, 0 = free, null = not listed
+  fee,                       // not shown in the app (prices removed 2026-10-09); kept in the data, may be 0 or null
   startDate, endDate,        // "YYYY-MM-DD" or null (self-paced)
   deadline,                  // "YYYY-MM-DD", or null = not listed (see "Missing details" below)
   level,                     // "Beginner" | "Intermediate" | "Advanced"
@@ -79,8 +78,8 @@ If a shape needs to change, tell the other person first, because screens depend 
 ```
 
 **Missing details and Closed events (smart ingestion, POC 1).** These fields may be `null` when the organizer never
-listed them: `deadline`, `fee`, `location`, `format`, `theme` and `registrationUrl`. Send `null`, not `""`, `0` or a
-made-up value (`fee: 0` means **Free**, so an unknown fee must be `null`). The screens show "Not listed", add a
+listed them: `deadline`, `location`, `format`, `theme` and `registrationUrl`. Send `null`, not `""` or a
+made-up value. (`fee` is not shown and not checked: prices were removed on 2026-10-09.) The screens show "Not listed", add a
 "Check details" flag, and list what is missing on the detail page. `startDate`/`endDate` = `null` still means
 self-paced and `teamSize` = `null` still means individual; those are not "missing".
 
