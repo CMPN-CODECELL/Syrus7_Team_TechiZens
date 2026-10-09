@@ -6,12 +6,20 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 // A list of toggleable chips (suggestions) plus a box to add your own.
-// Used for both interests and skills on the Profile page.
-export default function TagPicker({ label, selected, suggestions = [], onChange }) {
+// Used for both interests and skills (onboarding and the Profile page).
+// With a long list, `collapsedCount` shows only the first few suggestions (your picks always show)
+// and a button to see them all.
+export default function TagPicker({ label, selected, suggestions = [], collapsedCount, onChange }) {
   const [draft, setDraft] = useState("")
+  const [expanded, setExpanded] = useState(false)
 
   // Suggestions plus anything custom the student already added.
-  const options = [...suggestions, ...selected.filter((tag) => !suggestions.includes(tag))]
+  const allOptions = [...suggestions, ...selected.filter((tag) => !suggestions.includes(tag))]
+  const canFold = collapsedCount !== undefined && allOptions.length > collapsedCount
+  const folded = canFold && !expanded
+  const options = folded
+    ? allOptions.filter((tag, index) => index < collapsedCount || selected.includes(tag))
+    : allOptions
 
   function toggle(tag) {
     onChange(selected.includes(tag) ? selected.filter((t) => t !== tag) : [...selected, tag])
@@ -44,6 +52,12 @@ export default function TagPicker({ label, selected, suggestions = [], onChange 
           )
         })}
       </div>
+
+      {canFold && (
+        <Button type="button" variant="ghost" size="sm" onClick={() => setExpanded(!expanded)}>
+          {expanded ? "Show fewer" : `Show all ${allOptions.length}`}
+        </Button>
+      )}
 
       <form onSubmit={addDraft} className="flex max-w-sm gap-2">
         <Input

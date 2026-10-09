@@ -6,11 +6,10 @@ import BeginnerToggle from "@/components/BeginnerToggle"
 import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
-import { INTEREST_OPTIONS } from "@/data/constants"
+import { INTEREST_OPTIONS, SKILL_SUGGESTIONS } from "@/data/constants"
 import { YEAR_OPTIONS } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
-const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figma", "SQL", "Linux"]
 
 const XP_PER_STEP = 10
 
@@ -51,6 +50,7 @@ export default function OnboardingPage() {
           label="Interests"
           selected={profile.interests}
           suggestions={INTEREST_OPTIONS}
+          collapsedCount={16}
           onChange={(interests) => updateProfile({ interests })}
         />
       ),
@@ -69,6 +69,7 @@ export default function OnboardingPage() {
             label="Skills"
             selected={profile.skills}
             suggestions={SKILL_SUGGESTIONS}
+            collapsedCount={16}
             onChange={(skills) => updateProfile({ skills })}
           />
         </div>

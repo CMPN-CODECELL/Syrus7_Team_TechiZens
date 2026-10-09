@@ -2,6 +2,8 @@
 // `opportunities` tables). Rule from CONTRIBUTING.md: a detail the organizer did not list is
 // `null`, never "" or 0 (fee: 0 means Free, so an unknown fee must stay null).
 
+import { inferInterests } from "./interests.js"
+
 const MONTHS = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 }
 
 const pad = (n) => String(n).padStart(2, "0")
@@ -44,24 +46,29 @@ export function parseDateRange(text) {
 }
 
 // Devpost themes -> the interest names the app uses (INTEREST_OPTIONS in src/data/constants.js).
-// Themes with no clear match are left out rather than guessed.
+// Themes with no clear match are left out rather than guessed. Each theme can give several interests.
 const THEME_TO_INTEREST = {
-  "Machine Learning/AI": "AI & Machine Learning",
-  Web: "Web Development",
-  Mobile: "Mobile Apps",
-  Cybersecurity: "Cybersecurity",
-  DevOps: "Cloud & DevOps",
-  Serverless: "Cloud & DevOps",
-  IoT: "Robotics",
-  Databases: "Data Science",
-  Fintech: "Finance",
-  Blockchain: "Finance",
-  "Social Good": "Social Impact",
-  Health: "Social Impact",
-  Education: "Social Impact",
-  Design: "Design",
-  "Music/Art": "Design",
-  "E-commerce/Retail": "Entrepreneurship",
+  "Machine Learning/AI": ["AI & Machine Learning"],
+  Web: ["Web Development"],
+  Mobile: ["Mobile Apps"],
+  Cybersecurity: ["Cybersecurity"],
+  DevOps: ["Cloud & DevOps"],
+  Serverless: ["Cloud & DevOps"],
+  IoT: ["Internet of Things", "Robotics"],
+  Databases: ["Data Science"],
+  Fintech: ["Finance"],
+  Blockchain: ["Blockchain & Web3", "Finance"],
+  "Social Good": ["Social Impact"],
+  Health: ["Healthcare & Biotech", "Social Impact"],
+  Education: ["Education", "Social Impact"],
+  Design: ["Design"],
+  "Music/Art": ["Music & Art", "Design"],
+  "E-commerce/Retail": ["E-commerce", "Entrepreneurship"],
+  Quantum: ["Quantum Computing"],
+  "AR/VR": ["AR/VR"],
+  Gaming: ["Game Development"],
+  "Low/No Code": ["Automation & Low-Code"],
+  "Robotic Process Automation": ["Automation & Low-Code"],
 }
 
 // Theme names that say nothing about the topic. They are not used as the card's theme.
@@ -102,7 +109,10 @@ export function normalizeDevpost(raw, now = new Date()) {
 
   const themeNames = (raw.themes ?? []).map((theme) => theme.name)
   const topicTheme = themeNames.find((name) => !GENERIC_THEMES.has(name)) ?? themeNames[0] ?? null
-  const interests = [...new Set(themeNames.map((name) => THEME_TO_INTEREST[name]).filter(Boolean))]
+  // Interests from the Devpost themes, plus any the title and themes point to (shared keyword list).
+  const interests = [
+    ...new Set([...themeNames.flatMap((name) => THEME_TO_INTEREST[name] ?? []), ...inferInterests(`${raw.title} ${themeNames.join(" ")}`)]),
+  ]
 
   // Format and location: a "globe" icon means online. Devpost does not tell hybrid apart,
   // so it is only guessed when the place itself says "+ Online".

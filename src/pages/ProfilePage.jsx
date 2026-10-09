@@ -7,11 +7,10 @@ import BeginnerToggle from "@/components/BeginnerToggle"
 import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
-import { ABOUT_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS } from "@/data/constants"
+import { ABOUT_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS, SKILL_SUGGESTIONS } from "@/data/constants"
 import { personInitials } from "@/lib/format"
 import { YEAR_OPTIONS, yearLabel } from "@/lib/scoring"
 
-const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figma", "SQL", "Linux"]
 
 // Changes are saved immediately and shared with the rest of the app through UserProvider.
 export default function ProfilePage() {
@@ -92,6 +91,7 @@ export default function ProfilePage() {
             label="Interests"
             selected={profile.interests}
             suggestions={INTEREST_OPTIONS}
+            collapsedCount={16}
             onChange={(interests) => updateProfile({ interests })}
           />
         </CardContent>
@@ -110,6 +110,7 @@ export default function ProfilePage() {
             label="Skills"
             selected={profile.skills}
             suggestions={SKILL_SUGGESTIONS}
+            collapsedCount={16}
             onChange={(skills) => updateProfile({ skills })}
           />
         </CardContent>

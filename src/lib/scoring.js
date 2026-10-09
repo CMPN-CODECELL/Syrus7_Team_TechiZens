@@ -17,10 +17,19 @@ export function yearLabel(year) {
   return YEAR_OPTIONS.find((option) => option.value === year)?.label ?? "unknown year"
 }
 
-// Items of `a` that also appear in `b` (ignoring upper/lower case).
+// Compares names loosely, so "React.js", "react" and "React" match, and so do "C Programming Language" and "C".
+function nameKey(name) {
+  return name
+    .toLowerCase()
+    .replace(/\.js\b/g, "")
+    .replace(/\b(programming language|programming|language)\b/g, "")
+    .replace(/[^a-z0-9+#]/g, "")
+}
+
+// Items of `a` that also appear in `b` (ignoring upper/lower case and small differences in spelling).
 export function overlap(a, b) {
-  const lowerB = b.map((item) => item.toLowerCase())
-  return a.filter((item) => lowerB.includes(item.toLowerCase()))
+  const keysB = b.map(nameKey)
+  return a.filter((item) => keysB.includes(nameKey(item)))
 }
 
 // ---- Relevance --------------------------------------------------------------------------------
@@ -60,6 +69,36 @@ export const INTEREST_KEYWORDS = {
   Finance: ["finance", "fintech", "payments", "banking", "blockchain", "crypto", "trading"],
   Sustainability: ["sustainab", "climate", "green", "energy", "environment", "waste"],
   "Social Impact": ["social", "impact", "community", "nonprofit", "education", "health", "ngo"],
+  "Game Development": ["game", "games", "gaming", "unity", "unreal", "esports"],
+  "AR/VR": ["ar", "vr", "xr", "augmented reality", "virtual reality", "mixed reality", "metaverse"],
+  "Blockchain & Web3": ["blockchain", "web3", "crypto", "ethereum", "solidity", "smart contract", "nft", "defi"],
+  "Internet of Things": ["iot", "internet of things", "smart home", "sensor", "sensors"],
+  "Embedded Systems": ["embedded", "firmware", "microcontroller", "arduino", "raspberry pi", "esp32", "stm32"],
+  Electronics: ["electronics", "circuit", "circuits", "pcb", "vlsi", "semiconductor", "electrical"],
+  "Computer Networks": ["ccna", "cisco", "telecom", "5g", "wireless", "computer network", "routing"],
+  "Quantum Computing": ["quantum", "qubit"],
+  "Data Structures & Algorithms": ["data structures", "algorithm", "dsa", "leetcode"],
+  "Competitive Programming": ["competitive programming", "codeforces", "codechef", "icpc", "hackerrank", "coding contest"],
+  "Open Source": ["open source", "opensource", "github", "gsoc", "hacktoberfest", "outreachy"],
+  "Automation & Low-Code": ["automation", "low code", "low-code", "no code", "no-code", "rpa", "workflow"],
+  Mathematics: ["mathematics", "maths", "math", "olympiad", "algebra", "calculus", "geometry"],
+  "Research & Academia": ["research", "paper", "journal", "thesis", "phd", "academic", "symposium"],
+  "Product Management": ["product manager", "product management", "product strategy", "roadmap"],
+  "Management & Consulting": ["consulting", "consultant", "case study", "case competition", "business strategy", "human resources", "mba", "hr"],
+  "Digital Marketing": ["marketing", "seo", "branding", "advertising", "growth hacking"],
+  "E-commerce": ["ecommerce", "e-commerce", "retail", "marketplace", "shopify", "supply chain", "logistics"],
+  "Content Writing": ["content writing", "copywriting", "writing", "blog", "blogging", "journalism", "storytelling", "poetry"],
+  "Public Speaking": ["public speaking", "debate", "mun", "model united nations", "elocution", "oratory", "toastmasters"],
+  "Photography & Video": ["photography", "photo", "video", "videography", "filmmaking", "film", "cinematography"],
+  "Music & Art": ["music", "arts", "painting", "drawing", "sketching", "dance", "singing", "theatre", "theater"],
+  "Sports & Fitness": ["sports", "sport", "fitness", "cricket", "football", "chess", "athletics", "marathon", "yoga", "badminton"],
+  "Healthcare & Biotech": ["health", "healthcare", "medical", "medicine", "biotech", "biotechnology", "pharma", "clinical", "bioinformatics"],
+  Education: ["education", "edtech", "teaching", "tutoring", "pedagogy"],
+  "Agriculture & FoodTech": ["agriculture", "agri", "farming", "farmer", "foodtech", "crop", "dairy"],
+  "Electric Vehicles & Energy": ["electric vehicle", "ev", "battery", "batteries", "solar", "renewable", "hydrogen"],
+  "Mechanical Engineering": ["mechanical", "cad", "solidworks", "autocad", "manufacturing", "3d printing", "thermodynamics", "automotive"],
+  "Space & Aerospace": ["aerospace", "satellite", "rocket", "astronomy", "isro", "nasa", "astrophysics", "spacecraft"],
+  "Law & Policy": ["law", "legal", "policy", "policies", "governance", "civics", "parliament", "moot court"],
 }
 
 const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")

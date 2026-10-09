@@ -31,6 +31,36 @@ const TOPICS = [
   { label: "Finance", words: ["finance", "fintech", "investing", "investment", "stocks", "banking"], interests: ["Finance"] },
   { label: "Sustainability", words: ["sustainability", "sustainable", "climate", "green", "environment", "eco"], interests: ["Sustainability"] },
   { label: "Social impact", words: ["social impact", "ngo", "community", "social"], interests: ["Social Impact"] },
+  { label: "Game dev", words: ["game", "games", "gaming", "unity", "unreal", "esports"], interests: ["Game Development"] },
+  { label: "AR/VR", words: ["ar", "vr", "xr", "augmented reality", "virtual reality", "metaverse"], interests: ["AR/VR"] },
+  { label: "Blockchain", words: ["blockchain", "web3", "crypto", "ethereum", "solidity", "nft"], interests: ["Blockchain & Web3"] },
+  { label: "IoT", words: ["iot", "internet of things", "sensor"], interests: ["Internet of Things"] },
+  { label: "Embedded", words: ["embedded", "firmware", "microcontroller", "raspberry pi"], interests: ["Embedded Systems"] },
+  { label: "Electronics", words: ["electronics", "circuit", "pcb", "vlsi", "electrical"], interests: ["Electronics"] },
+  { label: "Networks", words: ["networking", "ccna", "cisco", "telecom", "5g"], interests: ["Computer Networks"] },
+  { label: "Quantum", words: ["quantum", "qubit"], interests: ["Quantum Computing"] },
+  { label: "DSA", words: ["dsa", "data structures", "algorithms", "algorithm", "leetcode"], interests: ["Data Structures & Algorithms"] },
+  { label: "Competitive coding", words: ["competitive programming", "codeforces", "icpc", "codechef"], interests: ["Competitive Programming"] },
+  { label: "Open source", words: ["open source", "opensource", "github", "gsoc", "hacktoberfest"], interests: ["Open Source"] },
+  { label: "Low-code", words: ["low code", "low-code", "no code", "no-code", "rpa"], interests: ["Automation & Low-Code"] },
+  { label: "Maths", words: ["math", "maths", "mathematics", "olympiad"], interests: ["Mathematics"] },
+  { label: "Research", words: ["research", "paper", "journal", "thesis", "academic"], interests: ["Research & Academia"] },
+  { label: "Product", words: ["product management", "product manager"], interests: ["Product Management"] },
+  { label: "Consulting", words: ["consulting", "consultant", "case study", "case competition", "mba", "hr"], interests: ["Management & Consulting"] },
+  { label: "Marketing", words: ["marketing", "seo", "branding", "advertising"], interests: ["Digital Marketing"] },
+  { label: "E-commerce", words: ["ecommerce", "e-commerce", "retail", "supply chain", "logistics"], interests: ["E-commerce"] },
+  { label: "Writing", words: ["writing", "content writing", "copywriting", "blog", "journalism"], interests: ["Content Writing"] },
+  { label: "Public speaking", words: ["public speaking", "debate", "mun", "model united nations", "elocution"], interests: ["Public Speaking"] },
+  { label: "Photo & video", words: ["photography", "photo", "video", "videography", "filmmaking", "film"], interests: ["Photography & Video"] },
+  { label: "Music & art", words: ["music", "arts", "painting", "drawing", "dance", "singing", "theatre"], interests: ["Music & Art"] },
+  { label: "Sports", words: ["sports", "sport", "fitness", "cricket", "football", "chess", "yoga"], interests: ["Sports & Fitness"] },
+  { label: "Healthcare", words: ["health", "healthcare", "medical", "medicine", "biotech", "pharma"], interests: ["Healthcare & Biotech"] },
+  { label: "Education", words: ["education", "edtech", "teaching", "tutoring"], interests: ["Education"] },
+  { label: "Agriculture", words: ["agriculture", "agri", "farming", "foodtech"], interests: ["Agriculture & FoodTech"] },
+  { label: "EV & energy", words: ["electric vehicle", "ev", "battery", "solar", "renewable", "energy"], interests: ["Electric Vehicles & Energy"] },
+  { label: "Mechanical", words: ["mechanical", "cad", "solidworks", "autocad", "manufacturing", "3d printing"], interests: ["Mechanical Engineering"] },
+  { label: "Space", words: ["aerospace", "satellite", "rocket", "astronomy", "isro", "nasa"], interests: ["Space & Aerospace"] },
+  { label: "Law & policy", words: ["law", "legal", "policy", "governance", "civics", "parliament"], interests: ["Law & Policy"] },
 ]
 
 // ---- Types of opportunity -> category ids -------------------------------------
@@ -46,7 +76,7 @@ const MONTHS = ["january", "february", "march", "april", "may", "june", "july", 
 
 // Words that carry no meaning for the search.
 const FILLER = new Set(
-  "a an the for in on at to of and or with find show me give any some that are is i we want need looking look can my please near events event opportunities opportunity things stuff best top recommended relevant good great nice friendly get something anything about around from by be it its this next ones".split(" ")
+  "development computing a an the for in on at to of and or with find show me give any some that are is i we want need looking look can my please near events event opportunities opportunity things stuff best top recommended relevant good great nice friendly get something anything about around from by be it its this next ones".split(" ")
 )
 
 const pad = (n) => String(n).padStart(2, "0")
