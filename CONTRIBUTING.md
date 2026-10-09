@@ -15,6 +15,7 @@ The screens never talk to Supabase directly. They call two functions:
 
 - `src/api/auth.js`: `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser`
 - `src/api/opportunities.js`: `getOpportunities`
+- `src/api/search.js`: `searchWithAI`
 - `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
 - `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
 - `src/api/connections.js`: `getConnectionPosts`, `createPost`, `deletePost`, `toggleLike`, `getComments`, `addComment`, `deleteComment`
@@ -75,6 +76,25 @@ If a shape needs to change, tell the other person first, because screens depend 
   warning,                   // text explaining why not verified, or null
 }
 ```
+
+**AI search** (`src/api/search.js`)
+
+```js
+searchWithAI({ query, profile })     // async. query = the student's plain-English request; profile = the profile shape above
+// returns:
+{
+  understood: [{ label, dropped }],  // what the AI picked out of the request, shown as chips ("Free", "Online", "This weekend").
+                                     // dropped = true if it had to ignore that part to find any results
+  message,                           // a short note (what was ignored, or why nothing was found), or null
+  results: [{ opportunityId, relevance, reason }],   // best first. relevance 0-100. reason = one short line on why it fits
+}
+```
+
+Right now this is a rule-based mock (`src/lib/mockSearchParser.js`). The real version should call a backend function
+(for example a Supabase Edge Function) that asks an LLM to turn the request into filters or a ranked list, then fills in
+the same shape. The LLM key must stay on the server, never in the frontend. Delete `mockSearchParser.js` when that is live.
+Example request: "free online coding workshops this weekend". If nothing matches everything, the AI should drop the least
+important parts one at a time (dates first) and say so in `message`, as the mock does.
 
 **Saved opportunities** (`src/api/saved.js`)
 

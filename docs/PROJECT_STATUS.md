@@ -42,6 +42,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - **Connections feed** (replaces Cheat Sheets in the menu), LinkedIn-style: a timeline of posts from connections (saved an opportunity, recommends one, looking for teammates, shared an update) **plus a composer so students can write their own posts** (text up to 500 characters, optionally attaching an opportunity), **like, comment, reply** (replies sit under a comment, like LinkedIn; replying to a reply adds an @mention), and **delete your own posts and comments**. Mock data through `src/api/connections.js` (seed posts and comments in `src/data/`, your own posts and comments kept in localStorage). No contact details are shown, and the composer reminds students not to share them.
 - **People you may know and invitations** (side panel on the Connections page, below the feed on phones): suggestions ranked by shared interests and skills with a **Connect** button that becomes **Pending** (click to withdraw), and **Invitations** you can **Accept** or **Ignore**. The feed only shows posts from your connections and you, so accepting an invitation makes that person's posts appear. Mock data through `src/api/people.js` (people in `src/data/mockPeople.js`; sent requests stay pending because acceptance is backend work).
 - **Connections list and people's profiles** (LinkedIn-style): the Connections page has two tabs, **Feed** and **Connections**. The Connections tab lists everyone you are connected to with search, sort (recently added / name), View and Remove (with a "Remove?" confirmation). Clicking any name or avatar (in a post, a comment, the side panel, the list, or mutual connections) opens that person's **profile page**: headline, college, year, city, connection and mutual counts, About, Interests and Skills (the ones you share are filled in), Education, Mutual connections, and their Activity (their posts, **only visible if you are connected**). The profile has the right button for the relationship: Connect, Pending (withdraw), Accept / Ignore, or Connected with Remove connection. Back goes through the profiles you visited and returns to the same tab. Clicking your own name opens your Profile page. No contact details appear anywhere.
+- **Conversational AI search (mock)** on the Discover page. Type a plain-English request (for example "free online coding workshops this weekend") and press Enter or **Ask AI**. A rule-based mock (`src/lib/mockSearchParser.js`, behind `src/api/search.js`) picks out cost, format, type, topic, level, dates, city, team size, eligibility and leftover keywords; shows chips for what it understood; ranks the matches and gives a one-line reason on each card. If nothing matches everything it ignores the least important parts one at a time (date first) and says so (ignored parts are struck through). Typing without Enter is still the live keyword search, and "No keyword matches" offers **Ask AI instead**. Choosing a type card or clearing returns to the normal feed.
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 
 ## Remaining (frontend), in suggested order
@@ -55,11 +56,11 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - Needs mock candidates/squads and new data shapes (agree with the backend dev first).
 - Squad Hub and Connections are separate pages (decision). "Looking for teammates" posts in Connections can link to Squad Hub later.
 
-### 2. Conversational AI search (POC 4)
-- Today: disabled "Ask AI" button; search is keyword-only.
-- Frontend mock: a simple rule-based parser for queries like "free online coding workshops this weekend"
-  (free, online, workshops, interest "coding", date "this weekend"), with each result explaining its relevance.
-- Real LLM search is backend work (edge function). Never put an LLM API key in the frontend.
+### 2. Conversational AI search (POC 4): DONE on the frontend as a mock
+- Built (see Done). Remaining is backend work: replace `src/api/search.js` with a call to a backend function that asks an LLM
+  (shape in CONTRIBUTING.md), then delete `src/lib/mockSearchParser.js`. Never put an LLM API key in the frontend.
+- The mock understands English only, and "this weekend" style dates are worked out from today's date (the mock events are
+  in Nov 2026 to Jan 2027, so "this weekend" finds nothing and the mock says it ignored the date; use "in december" to see dates working).
 
 ### 3. Smart ingestion display (POC 1)
 - Expired events shown as **Closed** (deadline in the past) and kept out of the main feed.
