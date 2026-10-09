@@ -17,7 +17,7 @@ The screens never talk to Supabase directly. They call two functions:
 - `src/api/opportunities.js`: `getOpportunities`
 - `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
 - `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
-- `src/api/connections.js`: `getConnectionPosts`, `toggleLike`
+- `src/api/connections.js`: `getConnectionPosts`, `createPost`, `deletePost`, `toggleLike`, `getComments`, `addComment`, `deleteComment`
 
 Today these return fake data. **Backend dev:** replace the inside of each function with the Supabase
 version, but keep the **function names and the returned shapes** (below). Then the screens keep working
@@ -113,13 +113,45 @@ Real change detection (and an optional realtime listener) is backend work.
   createdAt,                             // ISO date-time
   likeCount,                             // total likes, including this student's
   likedByMe,                             // boolean
+  commentCount,                          // comments and replies on this post
 }
 ```
 
-`getConnectionPosts()` returns posts from the student's connections only, newest first.
-`toggleLike(postId)` likes the post, or removes the like if already liked, and returns nothing.
-**Never include contact details** (email, phone, social links) in a post: contacts are only shared after double opt-in.
-Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_likes`, all with Row Level Security.
+`author.college` can be `null` (profiles have no college field yet). In the mock the logged-in student's author id is `"me"`;
+with a real backend, the screens need to know which posts and comments are the logged-in student's own (to show Delete),
+so either keep returning a stable marker or tell the frontend dev what to compare against.
+
+**Comment** (each item returned by `getComments`; examples in `src/data/mockComments.js`)
+
+```js
+{
+  id,
+  postId,
+  parentId,                              // null for a comment, or the id of the comment it replies to
+  author: { id, name, college, year },
+  text,
+  createdAt,                             // ISO date-time
+}
+```
+
+Replies sit one level under a comment, like LinkedIn: replying to a reply uses the same `parentId` as that reply.
+
+Functions (all async):
+
+```js
+getConnectionPosts()                          // posts from the student's connections plus their own, newest first
+createPost({ text, opportunityId })           // opportunityId may be null; returns the new post (type "update")
+deletePost(postId)                            // own posts only; also removes its comments
+toggleLike(postId)                            // likes, or removes the like if already liked
+getComments(postId)                           // all comments and replies on a post, oldest first
+addComment({ postId, parentId, text })        // parentId null for a comment; returns the new comment
+deleteComment(commentId)                      // own comments only; also removes its replies
+```
+
+**Never include contact details** (email, phone, social links) in a post or comment: contacts are only shared after double opt-in.
+Limits used by the screens: post text up to 500 characters, comment text up to 300 (enforce them on the server too).
+Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_likes`, `comments`, all with Row Level Security
+(read posts from connections and yourself; delete only your own).
 
 ## Git workflow (the simple version)
 

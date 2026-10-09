@@ -199,7 +199,9 @@ The interface must support in-app alerts explaining exactly what changed in:
 A LinkedIn-style timeline of activity posts from the students the user is connected to.
 
 - Post types: saved an opportunity, recommends an opportunity, looking for teammates, shared an update.
-- A post can embed an opportunity (opens its detail page). Posts can be liked.
+- Students can write their own posts (optionally attaching an opportunity), like posts, comment, reply to comments,
+  and delete their own posts and comments.
+- A post can embed an opportunity (opens its detail page).
 - It is a separate page from the Squad Hub (the Squad Hub is team matching around an opportunity).
 - Privacy still applies: no contact details in the feed (contacts only after double opt-in), and Nexus
   never reads private LinkedIn information.

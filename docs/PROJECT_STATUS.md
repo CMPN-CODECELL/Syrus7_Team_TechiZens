@@ -39,7 +39,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - 27 mock opportunities with real organizers (colleges, companies, startups, platforms)
 - Opportunity detail page: all POC fields, relevance + eligibility with reasons, conflict warning banner, "Last verified" (flagged as possibly out of date after 14 days), source link, "Apply on organizer's website" handoff, Save button. Back keeps the search, filters and scroll position.
 - Save opportunities and Change Sentinel alerts: Alerts page with in-app alerts (deadline / fee / rules, old to new value, mark read), Saved list, unread badge in the nav. Saved opportunities are the monitored ones. The Alerts page has two tabs, **Alerts** (with an unread count) and **Saved** (with a count). Mock data through `src/api/saved.js` and `src/api/alerts.js`.
-- **Connections feed** (new, replaces Cheat Sheets in the menu): a LinkedIn-style timeline of activity posts from connections (saved an opportunity, recommends one, looking for teammates, shared an update), with an embedded opportunity link and a Like button. Mock data through `src/api/connections.js`. No contact details are shown.
+- **Connections feed** (replaces Cheat Sheets in the menu), LinkedIn-style: a timeline of posts from connections (saved an opportunity, recommends one, looking for teammates, shared an update) **plus a composer so students can write their own posts** (text up to 500 characters, optionally attaching an opportunity), **like, comment, reply** (replies sit under a comment, like LinkedIn; replying to a reply adds an @mention), and **delete your own posts and comments**. Mock data through `src/api/connections.js` (seed posts and comments in `src/data/`, your own posts and comments kept in localStorage). No contact details are shown, and the composer reminds students not to share them.
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 
 ## Remaining (frontend), in suggested order
@@ -65,7 +65,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - Duplicate merging is a backend job.
 
 ### 4. Smaller items and polish
-- Connections: optional "Share an update" box so the student can post (needs an api function and shape).
+- Connections: more LinkedIn-style extras if wanted (comment likes, edit a post, "connect with" people suggestions, reporting). Not built.
 - Stale or conflicting information should be visible on cards too (tooltip or small note using `warning`).
 - Decide how Not eligible items rank (currently ranked by relevance only, so they can appear near the top).
 - Accessibility pass (keyboard focus, labels, contrast), tablet-width check.
@@ -86,7 +86,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 
 1. Squad Hub: how does a student choose leader vs solo seeker, and where is schedule fit entered (weekly hours? time slots?)?
 2. Should Not eligible opportunities be pushed down the feed?
-3. Connections: should students be able to post their own updates, or only read their connections' activity?
+3. Connections: who counts as a "connection" (there is no way to connect with people yet), and should posts need any moderation? (Students can already post, comment and reply.)
 
 ## Decisions made (and why)
 
