@@ -24,6 +24,15 @@ Workflow and data shapes: see [CONTRIBUTING.md](../CONTRIBUTING.md). Feature lis
 - Profile page: interests, skills, beginner toggle, year, location, budget (edits update the feed everywhere)
 - 27 mock opportunities with real organizers (colleges, companies, startups, platforms)
 - shadcn/ui set up; `src/api/` swap points created; README, CONTRIBUTING, `.env.example`
+- Supabase client configured (`src/lib/supabase.js`) using `@supabase/supabase-js`
+- Google OAuth login and profile syncing implemented in `src/api/auth.js` and `src/context/UserProvider.jsx`
+- Supabase opportunity fetching with relational organizer join implemented in `src/api/opportunities.js`
+- Created SQL migrations in `supabase/migrations/`:
+  - `0001_create_profiles.sql`: profiles table with automatic trigger on Google signup
+  - `0002_create_organizers.sql`: organizers table
+  - `0003_create_opportunities.sql`: opportunities table with category and deadline indexes
+  - `0004_enable_rls_policies.sql`: Row Level Security policies (students manage own profile, public reads listings)
+  - `0005_seed_opportunities.sql`: seed dataset containing 27 organizers and 27 opportunities from `mockOpportunities.js`
 
 ## Left to do (compare with the POC in AGENTS.md)
 
@@ -37,7 +46,7 @@ Workflow and data shapes: see [CONTRIBUTING.md](../CONTRIBUTING.md). Feature lis
 | Change Sentinel | Placeholder page. Needs saving opportunities and in-app alerts for deadline, fee and rule changes. |
 | Opportunity detail page | The "View" button does nothing yet. Needs all POC fields (theme, dates, format, team size, registration link). Suggested next task. |
 | Smart ingestion | Backend job: merging cross-posted duplicates, closing expired events. |
-| Real auth and data | Backend dev: Google OAuth and Supabase behind `src/api/auth.js` and `src/api/opportunities.js`. |
+| Real auth and data | Supabase integration and SQL migrations ready on `feature/supabase-auth`. Complete end-to-end Google OAuth testing with project credentials. |
 
 ## Decisions made (and why)
 

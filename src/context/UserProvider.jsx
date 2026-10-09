@@ -1,24 +1,50 @@
 import { useEffect, useState } from "react"
 import { getCurrentUser, saveUser, signInWithGoogle, signOut as apiSignOut } from "@/api/auth"
+import { supabase } from "@/lib/supabase"
 import { UserContext } from "./user-context"
 
 // Keeps "who is logged in" in React state so every screen can read it with useUser().
-// All real work (login, saving) happens in src/api/auth.js, so this file does not
-// change when the backend does.
+// Synchronizes state with Supabase auth events and profile database rows.
 export function UserProvider({ children }) {
   const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true) // true until we know if someone is logged in
+  const [loading, setLoading] = useState(true)
 
-  // On first load, check if a session already exists.
   useEffect(() => {
+    let isMounted = true
+
+    // Check if session already exists on load
     getCurrentUser().then((current) => {
-      setUser(current)
-      setLoading(false)
+      if (isMounted) {
+        setUser(current)
+        setLoading(false)
+      }
     })
+
+    // Listen for auth events (e.g. Google OAuth callback redirect, signout)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const current = await getCurrentUser()
+        if (isMounted) setUser(current)
+      } else if (event === "SIGNED_OUT") {
+        if (isMounted) setUser(null)
+      }
+      if (isMounted) setLoading(false)
+    })
+
+    return () => {
+      isMounted = false
+      subscription?.unsubscribe()
+    }
   }, [])
 
   async function signIn() {
-    setUser(await signInWithGoogle())
+    const result = await signInWithGoogle()
+    // When falling back to demo mode without Supabase keys, a user object is returned directly
+    if (result && result.name && result.profile) {
+      setUser(result)
+    }
   }
 
   async function signOut() {
