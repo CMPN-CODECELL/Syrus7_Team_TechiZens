@@ -15,6 +15,7 @@ Last updated: 2026-10-09
 Workflow and data shapes: [CONTRIBUTING.md](../CONTRIBUTING.md). Feature list (the POC): [AGENTS.md](../AGENTS.md).
 SQL rules: [supabase/README.md](../supabase/README.md).
 
+Frontend progress: the detail page is built on branch `feature/opportunity-detail-page` (open a PR when ready).
 The backend dev has started on branch `feature/supabase-auth` (their own computer). The frontend dev is about to
 start on `feature/opportunity-detail-page`. Nobody works directly on `main`; changes come in through Pull Requests.
 
@@ -34,11 +35,12 @@ start on `feature/opportunity-detail-page`. Nobody works directly on `main`; cha
 - Relevance and eligibility scoring with plain-language reasons (`src/lib/scoring.js`)
 - Profile page: interests, skills, beginner toggle, year, location, budget (edits update the feed everywhere)
 - 27 mock opportunities with real organizers (colleges, companies, startups, platforms)
+- Opportunity detail page (branch feature/opportunity-detail-page): all POC fields, relevance + eligibility with reasons, conflict warning banner, "Last verified" (flagged as possibly out of date after 14 days), source link, "Apply on organizer's website" handoff. Back keeps the search, filters and scroll position.
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 
 ## Remaining (frontend), in suggested order
 
-### 1. Opportunity detail page (next; unlocks 2, 3, 4)
+### 1. Opportunity detail page (DONE except Save and Cheat sheet, which come with items 2 and 3)
 Opens from the card's "View" button (currently does nothing). No router exists, so keep it simple: store the selected
 opportunity id in state in `App.jsx` and add a Back button.
 - Shows all POC fields: title, organizer, theme, description, format, location, fee, start/end dates, deadline, team size, level.

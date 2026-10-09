@@ -4,12 +4,9 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import { CATEGORIES } from "@/data/constants"
+import { formatDate } from "@/lib/format"
 import { costLabel } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
-
-function formatDate(isoDate) {
-  return new Date(isoDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
-}
 
 // One small labelled value in the facts row.
 function Fact({ label, value }) {
@@ -25,7 +22,7 @@ function Fact({ label, value }) {
 // so this component does not care where the numbers come from.
 // The card has 5 rows (top, title, facts, notes, footer). It uses a CSS subgrid so each row
 // lines up with the same row in neighbouring cards. See the grid in DiscoverPage.
-export default function OpportunityCard({ opportunity, relevance, reason, eligibility }) {
+export default function OpportunityCard({ opportunity, relevance, reason, eligibility, onOpen }) {
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
   return (
@@ -93,7 +90,7 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
             </>
           )}
         </span>
-        <Button className="flex-1" variant="outline">
+        <Button className="flex-1" variant="outline" onClick={() => onOpen(opportunity.id)}>
           View
         </Button>
       </div>

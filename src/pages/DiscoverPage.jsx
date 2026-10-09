@@ -17,7 +17,7 @@ const FILTERS = [
   { id: "sustainability", label: "Sustainability & Social Impact", test: isSustainability },
 ]
 
-export default function DiscoverPage() {
+export default function DiscoverPage({ onOpen }) {
   const { user } = useUser()
   const { profile } = user
 
@@ -126,6 +126,7 @@ export default function DiscoverPage() {
                 relevance={relevance}
                 reason={reason}
                 eligibility={eligibility}
+                onOpen={onOpen}
               />
             ))}
           </div>
