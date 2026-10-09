@@ -13,9 +13,11 @@ import { EMPTY_PROFILE } from "@/data/constants"
 import { supabase } from "@/lib/supabase"
 
 const STORAGE_KEY = "nexus-user"
-const isConfigured = Boolean(
-  import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
-)
+// VITE_DEMO_LOGIN=true turns real Google sign-in off: "Sign in with Google" then signs in as a demo student
+// (kept in this browser only). Opportunities are still read from Supabase. Used by judges and for local testing.
+const isConfigured =
+  Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY) &&
+  import.meta.env.VITE_DEMO_LOGIN !== "true"
 
 // Helper to map a database profile row and auth user into the app's User shape
 function formatUser(profileRow, authUser) {

@@ -1,51 +1,145 @@
 # Nexus
 
-Nexus is a verified opportunity discovery and squad-matching platform for college students.
-Built by Team TechiZens for Syrus 2026 (PS3: Intelligent Discovery of Practical Learning Opportunities).
+**Verified opportunity discovery and squad matching for college students.**
+Team TechiZens · Syrus 2026 · Problem statement PS3: *Intelligent Discovery of Practical Learning Opportunities*.
 
-Project rules and the feature list (the POC) are in [AGENTS.md](AGENTS.md).
-How we work together is in [CONTRIBUTING.md](CONTRIBUTING.md).
+Students today search LinkedIn, event sites and college notice boards by hand, and the listings are inconsistent,
+duplicated, and often miss the deadline, eligibility or location. Nexus collects opportunities from real sources,
+cleans them up, shows **how trustworthy** each one is, explains **why it fits you**, and helps you **find teammates**.
 
-## Run it
+> **For judges:** start with [Run it in 2 minutes](#run-it-in-2-minutes), then follow [A 5-minute tour](#a-5-minute-tour-what-to-click).
+> The table in [POC coverage](#poc-coverage) shows what is real and what is demo data.
 
-You need [Node.js](https://nodejs.org) installed.
+---
+
+## Run it in 2 minutes
+
+You need [Node.js](https://nodejs.org) 20.19 or newer (we developed on 24).
 
 ```bash
+git clone https://github.com/CMPN-CODECELL/Syrus7_Team_TechiZens.git
+cd Syrus7_Team_TechiZens
 npm install
+cp .env.judges .env.local        # Windows (cmd): copy .env.judges .env.local
 npm run dev
 ```
 
-Then open http://localhost:5173.
+Open **http://localhost:5173** and click **Sign in with Google**.
 
-Other commands:
+- `.env.judges` holds the **frontend** Supabase project URL and its public *anon* key, plus `VITE_DEMO_LOGIN=true`.
+  The anon key is public by design (it ships inside any web app's JavaScript); the database is protected by Row Level
+  Security. It gives **read access to the public listings** (opportunities and organizers); everything personal needs a sign-in.
+- `VITE_DEMO_LOGIN=true` means the button signs you in as a **Demo Student** (no Google account needed), while the
+  opportunities are still read live from our database. To use real Google sign-in instead, delete that line (the Google
+  account must be allowed by our OAuth setup).
+- Without `.env.local` the app starts but shows **no opportunities** (we deleted all mock listings on purpose).
+- The scraper's private `service_role` key is **not** in this repository, and never should be. Judges do not need it.
 
-| Command | What it does |
-|---|---|
-| `npm run lint` | Checks the code for mistakes |
-| `npm run build` | Makes the production build |
+Other commands: `npm run lint` · `npm run build` · `npm run ingest -- --dry-run` (fetches the live sources and prints
+what it would save; saves nothing and needs no key).
 
-Right now there is no backend. Login is a demo ("Sign in with Google" signs you in as a demo student)
-and the opportunities are fake, so everything runs locally.
+---
+
+## A 5-minute tour: what to click
+
+1. **Onboarding (4 steps).** Pick interests (42 to choose from, "Show all" expands the list), skills (about 110 quick
+   picks, or type your own), your year, and your **country, then city**. "Detect my location" picks the nearest listed city.
+2. **Discover.** You see 400+ real opportunities ranked for you, each with:
+   - a **relevance %** and a one-line reason ("Matches Web Development, Python");
+   - **Eligible / Not eligible** (with the reason when not eligible);
+   - a **Verified** or **Check details** badge, the deadline, and where it happens.
+
+   Try the category cards (Hackathons, Internships, Workshops, Competitions), the filters (**Beginner-Friendly**,
+   **Online**, **Sustainability & Social Impact**, plus **More filters**), **Sort by**, keyword search, and **Refresh**.
+   ("Courses" is empty because we do not have a course source yet.)
+3. **Conversational search.** Type a request and press Enter or **Ask AI**, for example
+   *"online coding workshops this weekend"*, *"hackathons for beginners"*, *"open source internships"*,
+   *"team hackathons closing soon"*. Each result says why it matches, and the page shows what the search understood.
+4. **Open a card (View).** This is the **Trust Layer**: a **Source** link, **Last verified**, a red *Check these details*
+   banner when details are missing or two sources disagree, an *event has ended* notice for closed events, and
+   **Apply on organizer's website** (Nexus never applies for you). The fee line says *Check the organizer's website*.
+5. **Save** an opportunity. Saved items are what **Change Sentinel** watches (see the note on alerts below).
+6. **Squad Hub.** Pick a team event, choose **I'm leading a team** or **I'm looking for a team**, and your weekly hours.
+   You get the top candidates (leader) or the best-fit squads (seeker), ranked by **skill fit and schedule fit**. Send a
+   request: about 4 seconds later the demo students answer, and **only then are contact details revealed** (double
+   opt-in). When a team is full, **Copy Roster** appears. Events without teams use the lightweight **Connect** mode.
+7. **Connections.** A LinkedIn-style feed from your connections: post, attach an opportunity, like, comment, reply;
+   *People you may know*, invitations, and student profiles. No contact details are ever shown here.
+8. **Profile.** Edit your headline, About, interests, skills and location; the feed re-ranks.
+
+**About the alerts page.** Change Sentinel reads alerts from the database for a *signed-in* account, so with the demo
+login the Alerts page is empty. The mechanism is built and the database side was tested: when ingestion changes a listing's
+deadline, a database trigger writes an alert such as *Deadline: 23 Oct 2026 → 25 Oct 2026*, which a student who saved it
+sees on the Alerts page. We are happy to show it live.
+
+---
+
+## POC coverage
+
+| POC feature | Status | Notes |
+|---|---|---|
+| **1. Smart ingestion** | **Real** | Devpost + Unstop are fetched into Supabase: title, theme, dates, deadline, format, location, team size, link. Cross-posted duplicates are merged, expired events are shown as closed, missing details are `null` and flagged. |
+| **2. Trust layer** | **Real** | Source link, Last verified time, warning banners for conflicts / missing details. |
+| **3. Decoupled scoring** | **Real** | Relevance (interests + skills, shown as %) and eligibility (Eligible / Not eligible with a reason) are separate. Scraped sources rarely state a minimum year, so "Not eligible" is uncommon in this data. |
+| **4. Discovery feed** | **Real** feed, **mock** AI | Ranked by skills and interests; three of the four POC filters plus extras (Free/Low-Cost was removed, see below). The conversational search is a rule-based reader, not an LLM yet. |
+| **6. Squad Hub** | UI and logic done, **demo people** | Ranking, opt-in, double opt-in, Copy Roster, Connect mode work. The students are invented (example.com addresses); the database tables and privacy rules exist but the screens are not wired to them yet. |
+| **7. Privacy and handoff** | **Real** | Contacts only after both sides agree; Copy Roster; you apply on the organizer's site; no private LinkedIn data. |
+| **8. Change Sentinel** | **Real** (needs a real login) | Save an opportunity, and a database trigger alerts you when its deadline changes. |
+| **9. Connections feed** | UI done, **demo data** | Added by the product owner; not in the original POC. |
+
+**Product-owner decisions during the build** (all recorded in `AGENTS.md`): the *Participation Cheat Sheet* was replaced by the
+Connections feed; **prices were removed** because they are rarely stated on the source sites (cards show no fee, the
+detail page says to check the organizer's website, and the Free/Low-Cost filter and budget question went with it);
+weekly hours moved from the profile into the Squad Hub.
+
+---
+
+## How the data gets in
+
+```
+Devpost (public JSON) ┐
+                      ├─> scripts/ingest ─> clean up ─> merge duplicates ─> Supabase ─> the web app
+Unstop  (public API)  ┘     (Node)         flag gaps     flag conflicts     (Postgres + RLS)
+```
+
+- Only public endpoints that the sites' `robots.txt` allow, one request at a time with a pause. No logins, no personal data.
+- Missing details stay `null` and are flagged instead of being guessed. Interests and level are derived from the listing's
+  own themes and title; nothing is invented.
+- Run `npm run ingest` (needs a private key) or let the daily GitHub Action (`.github/workflows/ingest.yml`) do it; the
+  Action activates once the repository secrets are added.
+- A database trigger logs deadline changes for Change Sentinel. Details: [`scripts/ingest/README.md`](scripts/ingest/README.md).
+
+---
+
+## Honest limitations
+
+- **Conversational search is rule-based** (it understands topics, formats, types, dates and places, not free-form language).
+  The plan is an LLM behind a Supabase Edge Function; the API boundary is already in `src/api/search.js`.
+- **Squad Hub and Connections use invented students.** Nothing there touches real people.
+- **Sources are unofficial public endpoints** (Devpost's JSON, Unstop's public API) and can change. Only two sources so far.
+- **Not deployed yet**; it runs locally with the steps above.
+- Google sign-in only works for accounts our OAuth setup allows. The demo login avoids this.
+
+---
 
 ## Tech
 
-React, Vite, Tailwind CSS 4, shadcn/ui. Planned backend: Supabase (PostgreSQL, Google OAuth).
+React 19 · Vite · Tailwind CSS 4 · shadcn/ui · Supabase (PostgreSQL, Row Level Security, Google OAuth) · Node scripts for
+ingestion · GitHub Actions.
 
-## Folder map
+## Repository map
 
 ```
 src/
-  api/          The ONLY place that talks to a backend (the backend teammate edits these)
-    auth.js           login, logout, saving the profile
-    opportunities.js  loading opportunities
-  components/   Reusable UI pieces (cards, header, pickers)
-    ui/               shadcn components (generated, avoid editing)
-  context/      Shares "who is logged in" with every screen (useUser)
-  data/
-    constants.js      Fixed lists (categories, interests, empty profile)
-    cities.js         Indian cities for the location picker
-    mockOpportunities.js  Fake opportunities, deleted once Supabase is live
-  lib/          Plain helper functions
-    scoring.js        Relevance and eligibility calculation
-  pages/        One file per screen (Login, Onboarding, Discover, Profile, ...)
+  pages/        One file per screen (Discover, Squad Hub, Connections, Alerts, Profile, ...)
+  components/   Cards, pickers, Squad Hub parts (ui/ is generated shadcn)
+  api/          The only place that talks to the backend (auth, opportunities, saved, alerts, ...)
+  lib/          Scoring, filters and sorting, ingestion helpers, location, search parser
+  data/         Interest / skill / city lists and the demo-student data
+scripts/ingest/ Scraper: sources, normalizing, duplicate merging, saving to Supabase
+supabase/       SQL migrations (tables, privacy rules, triggers)
+docs/           PROJECT_STATUS.md (what is done / left), SUPABASE_AUDIT.md
 ```
+
+Project rules and the feature list: [AGENTS.md](AGENTS.md) · How we work: [CONTRIBUTING.md](CONTRIBUTING.md) ·
+Live status: [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md)
