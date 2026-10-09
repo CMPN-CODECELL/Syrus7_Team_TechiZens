@@ -17,7 +17,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 
 **Workflow (hybrid):**
 - The frontend dev works directly on `main` in small, finished steps (only push when `npm run lint` and `npm run build` pass; always `git pull` first). A branch is used only for big or experimental features.
-- The backend dev works on a branch (`feature/supabase-auth`) because auth work can break login while half done.
+- The backend dev works on a branch because auth work can break login while half done. `feature/supabase-auth` (login, profile, opportunities) was merged into `main` on 2026-10-09; new backend work (saved, alerts, ...) should go on a new branch.
 - **Neither person merges the backend branch into `main` without telling the other first.**
 - The backend dev should run `git merge main` into their branch regularly to pick up frontend changes.
 
@@ -71,8 +71,8 @@ To start fresh, clear this site's localStorage in the browser. In the demo, othe
 - **Smart ingestion display** (POC 1): **Closed** events and **missing-details** flags. An opportunity is Closed when its deadline (or end date, if there is no deadline) is before today. Closed ones are **left out of the Discover feed, the AI search and the Squad Hub list**, and still open from the Saved list, posts and profile activity, where they show **Closed 30 Sep** in red; their detail page has a "This opportunity is closed" banner, a **Closed** badge and a disabled **Applications closed** button (the source link stays so a student can check if the deadline was extended). A detail the organizer never listed (deadline, fee, location, format, theme, registration link) is `null` in the data; cards and the detail page show **Not listed**, add the **Check details** flag, and the detail page says exactly what is missing. An unknown fee is never treated as free or low-cost, and gets half credit for budget in the relevance score. The logic lives in `src/lib/ingestion.js` (`isClosed`, `getMissingDetails`, `needsCheck`) and the one-line "Deadline / Closed" text in `src/components/DeadlineLine.jsx`. Duplicate merging is backend work.
 - shadcn/ui set up; `src/api/` swap points; README, CONTRIBUTING, `.env.example`, SQL migrations convention, shared AI context files
 - Supabase client configured (`src/lib/supabase.js`) using `@supabase/supabase-js`
-- Google OAuth login and profile syncing implemented in `src/api/auth.js` and `src/context/UserProvider.jsx` (on `feature/supabase-auth`)
-- Supabase opportunity fetching with relational organizer join implemented in `src/api/opportunities.js` (on `feature/supabase-auth`)
+- Google OAuth login and profile syncing implemented in `src/api/auth.js` and `src/context/UserProvider.jsx` (merged into `main`)
+- Supabase opportunity fetching with relational organizer join implemented in `src/api/opportunities.js` (merged into `main`)
 - Created SQL migrations in `supabase/migrations/`:
   - `0001_create_profiles.sql`: profiles table with automatic trigger on Google signup
   - `0002_create_organizers.sql`: organizers table
@@ -103,9 +103,9 @@ Smart ingestion display (Closed events and missing-details flags) is **done** (s
 
 ## Remaining (backend, owned by the backend dev)
 
-- **Done on branch `feature/supabase-auth`**:
+- **Done (merged into `main` on 2026-10-09)**:
   - Google OAuth through Supabase; real `getCurrentUser`, `signInWithGoogle`, `signOut`, `saveUser` in `src/api/auth.js`.
-  - Tables: profiles, organizers, opportunities (shapes in CONTRIBUTING.md), RLS so students see only their own profile, seed data from `src/data/mockOpportunities.js`. Migrations `0001` through `0005`.
+  - Tables: profiles, organizers, opportunities (shapes in CONTRIBUTING.md), RLS so students see only their own profile, seed data from `src/data/mockOpportunities.js`. Migrations `0001` through `0006`.
   - Real `getOpportunities` in `src/api/opportunities.js`.
 - **Remaining swap points to connect**:
   - Tables behind `src/api/saved.js` and `src/api/alerts.js` (shapes in CONTRIBUTING.md).
@@ -139,7 +139,7 @@ Smart ingestion display (Closed events and missing-details flags) is **done** (s
 - **UI style:** minimal and not text-heavy. The user disliked "overstuffed" screens; keep copy short.
 - **Mock data:** organizer names are real, but all events (titles, dates, fees, links) are invented. Not real listings. The people in Connections posts are invented too. Logos load from a public favicon service (`google.com/s2/favicons`); IIT Bombay uses the Techfest logo because the institute's crest could not be found. To use your own logo, put it in `public/logos/` and set the organizer's `logo` to `/logos/name.png`.
 - **Detect my location** picks the nearest listed city from the browser's coordinates. Nothing is sent to a server.
-- **Login is a demo.** It signs in as "Demo Student" and stores the profile in localStorage until Supabase is connected.
+- **Login is a demo unless Supabase keys are set.** With `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env.local` it uses real Google sign-in and the database; without them it signs in as "Demo Student" with localStorage and mock opportunities. Everything except login, profile and opportunities is still mock.
 - **All backend access goes through `src/api/*`.** Screens never import Supabase directly.
 - **No router yet.** Navigation is simple state in `App.jsx`.
 
