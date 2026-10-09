@@ -7,6 +7,7 @@ import {
   sendConnectionRequest,
   withdrawConnectionRequest,
 } from "@/api/people"
+import PersonLink from "@/components/PersonLink"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -18,11 +19,15 @@ import { getSharedWithProfile, yearLabel } from "@/lib/scoring"
 function PersonInfo({ person, note }) {
   return (
     <div className="flex min-w-0 items-center gap-2.5">
-      <Avatar size="lg">
-        <AvatarFallback>{personInitials(person.name)}</AvatarFallback>
-      </Avatar>
+      <PersonLink personId={person.id} aria-label={`${person.name}'s profile`}>
+        <Avatar size="lg">
+          <AvatarFallback>{personInitials(person.name)}</AvatarFallback>
+        </Avatar>
+      </PersonLink>
       <div className="min-w-0 leading-tight">
-        <p className="truncate text-sm font-medium">{person.name}</p>
+        <PersonLink personId={person.id} className="block max-w-full truncate text-sm font-medium">
+          {person.name}
+        </PersonLink>
         <p className="truncate text-xs text-muted-foreground">
           {person.college} · {yearLabel(person.year)}
         </p>

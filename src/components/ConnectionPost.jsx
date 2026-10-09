@@ -2,6 +2,7 @@ import { useState } from "react"
 import { MessageCircle, ThumbsUp, Trash2 } from "lucide-react"
 import CommentSection from "@/components/CommentSection"
 import OrganizerLogo from "@/components/OrganizerLogo"
+import PersonLink from "@/components/PersonLink"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -38,12 +39,16 @@ export default function ConnectionPost({
       <CardContent className="space-y-3">
         {/* Who and when */}
         <div className="flex items-start gap-3">
-          <Avatar size="lg">
-            <AvatarFallback>{personInitials(author.name)}</AvatarFallback>
-          </Avatar>
+          <PersonLink personId={author.id} aria-label={`${author.name}'s profile`}>
+            <Avatar size="lg">
+              <AvatarFallback>{personInitials(author.name)}</AvatarFallback>
+            </Avatar>
+          </PersonLink>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="text-sm">
-              <span className="font-medium">{isMine ? "You" : author.name}</span>{" "}
+              <PersonLink personId={author.id} className="font-medium">
+                {isMine ? "You" : author.name}
+              </PersonLink>{" "}
               <span className="text-muted-foreground">{ACTIONS[post.type]}</span>
             </p>
             <p className="truncate text-xs text-muted-foreground">{details}</p>

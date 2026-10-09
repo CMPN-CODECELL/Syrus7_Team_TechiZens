@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { Send, Trash2, X } from "lucide-react"
 import { addComment, deleteComment, getComments } from "@/api/connections"
+import PersonLink from "@/components/PersonLink"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,12 +20,16 @@ function Comment({ comment, now, onReply, onDelete }) {
 
   return (
     <div className="flex gap-2.5">
-      <Avatar size="sm">
-        <AvatarFallback>{personInitials(author.name)}</AvatarFallback>
-      </Avatar>
+      <PersonLink personId={author.id} aria-label={`${author.name}'s profile`} className="self-start">
+        <Avatar size="sm">
+          <AvatarFallback>{personInitials(author.name)}</AvatarFallback>
+        </Avatar>
+      </PersonLink>
       <div className="min-w-0 flex-1">
         <div className="rounded-lg bg-muted px-3 py-2">
-          <p className="text-sm leading-tight font-medium">{author.name}</p>
+          <PersonLink personId={author.id} className="text-sm leading-tight font-medium">
+            {author.name}
+          </PersonLink>
           <p className="truncate text-xs text-muted-foreground">{details}</p>
           <p className="mt-1 text-sm break-words whitespace-pre-wrap">{comment.text}</p>
         </div>

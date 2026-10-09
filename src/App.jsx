@@ -1,5 +1,6 @@
 import { useRef, useState } from "react"
 import Header from "@/components/Header"
+import { NavContext } from "@/context/nav-context"
 import { useUser } from "@/context/user-context"
 import AlertsPage from "@/pages/AlertsPage"
 import ConnectionsPage from "@/pages/ConnectionsPage"
@@ -8,6 +9,7 @@ import DiscoverPage from "@/pages/DiscoverPage"
 import LoginPage from "@/pages/LoginPage"
 import OnboardingPage from "@/pages/OnboardingPage"
 import OpportunityDetailPage from "@/pages/OpportunityDetailPage"
+import PersonProfilePage from "@/pages/PersonProfilePage"
 import ProfilePage from "@/pages/ProfilePage"
 
 // Features from the POC that are not built yet. Each gets its own menu entry.
@@ -28,48 +30,90 @@ function App() {
   const { user, loading } = useUser()
   const [page, setPage] = useState("discover")
   const [openId, setOpenId] = useState(null) // id of the opportunity being viewed, if any
-  const feedScroll = useRef(0) // where the page was scrolled to, so Back returns there
+  const [personId, setPersonId] = useState(null) // id of the student whose profile is being viewed, if any
+  const [connectionsTab, setConnectionsTab] = useState("feed") // kept here so Back returns to the same tab
+  const scrollStack = useRef([]) // where each screen was scrolled to, so Back returns there
+  const personHistory = useRef([]) // profiles visited before the current one, so Back goes through them
 
   if (loading) return <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">Loading...</div>
   if (!user) return <LoginPage />
   if (!user.onboarded) return <OnboardingPage />
 
-  const comingSoon = openId ? null : COMING_SOON[page]
+  const showingSubPage = Boolean(openId || personId)
+  const comingSoon = showingSubPage ? null : COMING_SOON[page]
 
   function goTo(nextPage) {
     setPage(nextPage)
     setOpenId(null)
+    setPersonId(null)
+    scrollStack.current = []
+    personHistory.current = []
   }
 
-  function openOpportunity(id) {
-    feedScroll.current = window.scrollY
-    setOpenId(id)
+  function remember() {
+    scrollStack.current.push(window.scrollY)
     window.scrollTo(0, 0)
   }
 
-  function backFromDetail() {
+  function restore() {
+    const y = scrollStack.current.pop() ?? 0
+    requestAnimationFrame(() => window.scrollTo(0, y))
+  }
+
+  function openOpportunity(id) {
+    remember()
+    setOpenId(id)
+  }
+
+  function openPerson(id) {
+    if (id === "me") return goTo("profile") // your own profile is the Profile page
+    if (personId) personHistory.current.push(personId) // coming from another profile
+    else remember()
+    setPersonId(id)
+    window.scrollTo(0, 0)
+  }
+
+  function backFromOpportunity() {
     setOpenId(null)
-    requestAnimationFrame(() => window.scrollTo(0, feedScroll.current))
+    restore()
+  }
+
+  function backFromPerson() {
+    const previous = personHistory.current.pop()
+    if (previous) {
+      setPersonId(previous)
+      window.scrollTo(0, 0)
+    } else {
+      setPersonId(null)
+      restore()
+    }
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header page={page} onNavigate={goTo} />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* The feed stays mounted (just hidden) so search and filters are kept when you come back */}
-        {page === "discover" && (
-          <div hidden={Boolean(openId)}>
-            <DiscoverPage onOpen={openOpportunity} />
-          </div>
-        )}
-        {/* A detail page can be opened from any screen; Back returns to that screen */}
-        {openId && <OpportunityDetailPage opportunityId={openId} onBack={backFromDetail} />}
-        {!openId && page === "alerts" && <AlertsPage onOpen={openOpportunity} />}
-        {!openId && page === "connections" && <ConnectionsPage onOpen={openOpportunity} />}
-        {!openId && page === "profile" && <ProfilePage />}
-        {comingSoon && <ComingSoonPage {...comingSoon} />}
-      </main>
-    </div>
+    <NavContext.Provider value={{ openPerson }}>
+      <div className="min-h-screen bg-background text-foreground">
+        <Header page={page} onNavigate={goTo} />
+        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+          {/* The feed stays mounted (just hidden) so search and filters are kept when you come back */}
+          {page === "discover" && (
+            <div hidden={showingSubPage}>
+              <DiscoverPage onOpen={openOpportunity} />
+            </div>
+          )}
+          {/* An opportunity or a person can be opened from any screen; Back returns to the previous one */}
+          {openId && <OpportunityDetailPage opportunityId={openId} onBack={backFromOpportunity} />}
+          {!openId && personId && (
+            <PersonProfilePage key={personId} personId={personId} onBack={backFromPerson} onOpen={openOpportunity} />
+          )}
+          {!showingSubPage && page === "alerts" && <AlertsPage onOpen={openOpportunity} />}
+          {!showingSubPage && page === "connections" && (
+            <ConnectionsPage onOpen={openOpportunity} tab={connectionsTab} onTabChange={setConnectionsTab} />
+          )}
+          {!showingSubPage && page === "profile" && <ProfilePage />}
+          {comingSoon && <ComingSoonPage {...comingSoon} />}
+        </main>
+      </div>
+    </NavContext.Provider>
   )
 }
 

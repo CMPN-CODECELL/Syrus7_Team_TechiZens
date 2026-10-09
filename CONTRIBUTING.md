@@ -18,7 +18,7 @@ The screens never talk to Supabase directly. They call two functions:
 - `src/api/saved.js`: `getSavedIds`, `saveOpportunity`, `unsaveOpportunity`
 - `src/api/alerts.js`: `getAlerts`, `markAlertRead`, `markAllAlertsRead`
 - `src/api/connections.js`: `getConnectionPosts`, `createPost`, `deletePost`, `toggleLike`, `getComments`, `addComment`, `deleteComment`
-- `src/api/people.js`: `getConnectedIds`, `getSuggestions`, `sendConnectionRequest`, `withdrawConnectionRequest`, `getInvitations`, `acceptInvitation`, `ignoreInvitation`
+- `src/api/people.js`: `getConnectedIds`, `getConnections`, `getPerson`, `removeConnection`, `getSuggestions`, `sendConnectionRequest`, `withdrawConnectionRequest`, `getInvitations`, `acceptInvitation`, `ignoreInvitation`
 
 Today these return fake data. **Backend dev:** replace the inside of each function with the Supabase
 version, but keep the **function names and the returned shapes** (below). Then the screens keep working
@@ -158,19 +158,41 @@ Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_lik
 
 ```js
 // Person (never include contact details)
-{ id, name, college, year, interests, skills }      // year = profile numbers; interests and skills are lists of text
+{
+  id, name,
+  college, year, location,            // year = profile numbers (-2 .. 5); location is a city name
+  headline,                           // one line, e.g. "Data science and machine learning enthusiast"
+  about,                              // a short paragraph
+  interests, skills,                  // lists of text
+  connectionCount,                    // shown as "N connections"
+}
 
 // Suggestion = Person + a flag
-{ ...person, requestSent }                          // true if this student already asked to connect
+{ ...person, requestSent }            // true if this student already asked to connect
+
+// Connection = Person + when
+{ ...person, connectedAt }            // ISO date-time
 
 // Invitation = someone asked to connect with this student
 { id, person, createdAt }
+
+// Profile = what getPerson returns for a profile page
+{
+  ...person,
+  relationship,                       // "connected" | "invited" (they asked this student) | "pending" (this student asked) | "none"
+  invitationId,                       // set when relationship is "invited", otherwise null
+  connectedAt,                        // set when relationship is "connected", otherwise null
+  mutualConnections,                  // list of Person that both students are connected to
+}
 ```
 
 Functions (all async):
 
 ```js
 getConnectedIds()                    // ids of the students this student is connected to
+getConnections()                     // the student's connections (Connection[]), most recently connected first
+getPerson(personId)                  // a Profile, or null if there is no such person
+removeConnection(personId)           // removes a connection (their posts leave the feed)
 getSuggestions()                     // people who are not connected and have not invited this student (the screen ranks them)
 sendConnectionRequest(personId)      // creates a pending request
 withdrawConnectionRequest(personId)  // cancels it
@@ -178,6 +200,10 @@ getInvitations()                     // unanswered invitations received, newest 
 acceptInvitation(invitationId)       // makes the sender a connection (their posts then appear in the feed)
 ignoreInvitation(invitationId)       // declines it
 ```
+
+The profile page shows someone's activity (their posts) only if the student is connected to them. It gets this from
+`getConnectionPosts()`, which already only returns posts from connections, so the backend does not need an extra function.
+The student's own profile is the existing Profile page (it has no headline or "about" yet).
 
 A request becomes a connection only when the OTHER student accepts it (backend work; in the mock, sent requests just stay pending).
 Connecting does NOT share contact details. Those only come after double opt-in in the Squad Hub.

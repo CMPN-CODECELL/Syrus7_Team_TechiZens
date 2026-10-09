@@ -203,6 +203,9 @@ A LinkedIn-style timeline of activity posts from the students the user is connec
   and delete their own posts and comments.
 - "People you may know" (ranked by shared interests and skills) with Connect, and invitations to Accept or Ignore.
   The feed shows posts from connections and the student only. Connecting does not share contact details.
+- A Connections tab lists the student's connections (search, sort, remove). Clicking any name opens that student's
+  profile (headline, college, year, About, interests, skills, mutual connections, activity). Their activity is only
+  visible to connections. No contact details are shown anywhere.
 - A post can embed an opportunity (opens its detail page).
 - It is a separate page from the Squad Hub (the Squad Hub is team matching around an opportunity).
 - Privacy still applies: no contact details in the feed (contacts only after double opt-in), and Nexus
