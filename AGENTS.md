@@ -229,6 +229,9 @@ The frontend should use these fields when representing the student's profile and
 Note (user decision): Weekly hours is NOT collected in onboarding or used in relevance scoring for now.
 It will return in the team-building (Squad Hub) section.
 
+Note (user decision): the profile also has an editable headline (one line) and About (short paragraph), shown to
+connections on the student's profile. They are edited on the Profile page.
+
 ---
 
 ## Frontend Technology

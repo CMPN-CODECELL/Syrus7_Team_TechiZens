@@ -7,7 +7,8 @@
 // Keep the function names, inputs and return values the same and the app keeps working.
 //
 // A "user" looks like:
-//   { name, email, onboarded: boolean, profile: { skills, interests, isBeginner, year, location, budget } }
+//   { name, email, onboarded: boolean, profile: { headline, about, skills, interests, isBeginner, year, location, budget } }
+// (older saved users may not have headline / about yet; treat them as empty text)
 // ============================================================================
 
 import { EMPTY_PROFILE } from "@/data/constants"

@@ -1,12 +1,15 @@
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import BeginnerToggle from "@/components/BeginnerToggle"
 import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
-import { INTEREST_OPTIONS } from "@/data/constants"
-import { YEAR_OPTIONS } from "@/lib/scoring"
+import { ABOUT_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS } from "@/data/constants"
+import { personInitials } from "@/lib/format"
+import { YEAR_OPTIONS, yearLabel } from "@/lib/scoring"
 
 const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figma", "SQL", "Linux"]
 
@@ -14,6 +17,9 @@ const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figm
 export default function ProfilePage() {
   const { user, updateProfile } = useUser()
   const { profile } = user
+  // Older saved profiles do not have these two fields yet.
+  const headline = profile.headline ?? ""
+  const about = profile.about ?? ""
 
   // Number inputs: keep the field empty-friendly, store a number.
   function setNumber(field) {
@@ -22,10 +28,65 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-3xl font-semibold tracking-tight">Profile</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
-      </div>
+      {/* How you appear: the same layout as other students' profiles */}
+      <Card>
+        <CardContent className="flex items-start gap-4">
+          <Avatar className="size-20">
+            <AvatarFallback className="text-2xl">{personInitials(user.name)}</AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1 space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">{user.name}</h1>
+            <p className="text-sm break-words">
+              {headline || <span className="text-muted-foreground">Add a headline below</span>}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {yearLabel(profile.year)}
+              {profile.location && ` · ${profile.location}`}
+            </p>
+            <p className="text-xs text-muted-foreground">{user.email}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>About you</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="headline">Headline</Label>
+            <Input
+              id="headline"
+              value={headline}
+              maxLength={HEADLINE_MAX_LENGTH}
+              placeholder="e.g. Second-year student exploring web development"
+              onChange={(event) => updateProfile({ headline: event.target.value })}
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {headline.length}/{HEADLINE_MAX_LENGTH}
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="about">About</Label>
+            <Textarea
+              id="about"
+              value={about}
+              maxLength={ABOUT_MAX_LENGTH}
+              rows={4}
+              placeholder="Tell your connections a little about yourself"
+              onChange={(event) => updateProfile({ about: event.target.value })}
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {about.length}/{ABOUT_MAX_LENGTH}
+            </p>
+          </div>
+
+          <p className="text-xs text-muted-foreground">
+            Don't add phone numbers or emails. Contacts are shared only after both sides agree.
+          </p>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

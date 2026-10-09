@@ -40,6 +40,8 @@ If a shape needs to change, tell the other person first, because screens depend 
   email: "demo.student@example.com",
   onboarded: false,          // true once the 5-step setup is finished
   profile: {
+    headline: "",            // one line under the name, up to 100 characters ("" if not written yet)
+    about: "",               // a short paragraph, up to 300 characters ("" if not written yet)
     skills: ["Python"],      // list of text
     interests: ["Design"],   // list of text, from INTEREST_OPTIONS in src/data/constants.js
     isBeginner: false,
@@ -203,7 +205,9 @@ ignoreInvitation(invitationId)       // declines it
 
 The profile page shows someone's activity (their posts) only if the student is connected to them. It gets this from
 `getConnectionPosts()`, which already only returns posts from connections, so the backend does not need an extra function.
-The student's own profile is the existing Profile page (it has no headline or "about" yet).
+The student's own profile is the existing Profile page. It now has an editable `headline` and `about` (see the User shape above),
+so the real backend should store them with the rest of the profile and return them from `getCurrentUser`. Other students
+see them through `getPerson`. A profile saved before these fields existed may not have them: treat a missing value as `""`.
 
 A request becomes a connection only when the OTHER student accepts it (backend work; in the mock, sent requests just stay pending).
 Connecting does NOT share contact details. Those only come after double opt-in in the Squad Hub.

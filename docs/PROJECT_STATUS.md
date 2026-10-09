@@ -35,7 +35,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - Discover page: search, 5 category cards (Courses, Internships, Hackathons, Workshops, Competitions), the 4 POC filters, a ranked personalized feed
 - Opportunity cards: organizer logo and name, relevance %, Verified / Check details badge, Eligible / Not eligible with reason, bookmark, aligned grid
 - Relevance and eligibility scoring with plain-language reasons (`src/lib/scoring.js`)
-- Profile page: interests, skills, beginner toggle, year, location, budget (edits update the feed everywhere)
+- Profile page: a header with your initials, name, headline, year and city (same layout as other students' profiles), an **About you** card with an editable **headline** (up to 100 characters) and **About** (up to 300), then interests, skills, beginner toggle, year, location and budget (edits update the feed everywhere). Profiles saved before headline/About existed still work (shown as empty).
 - 27 mock opportunities with real organizers (colleges, companies, startups, platforms)
 - Opportunity detail page: all POC fields, relevance + eligibility with reasons, conflict warning banner, "Last verified" (flagged as possibly out of date after 14 days), source link, "Apply on organizer's website" handoff, Save button. Back keeps the search, filters and scroll position.
 - Save opportunities and Change Sentinel alerts: Alerts page with in-app alerts (deadline / fee / rules, old to new value, mark read), Saved list, unread badge in the nav. Saved opportunities are the monitored ones. The Alerts page has two tabs, **Alerts** (with an unread count) and **Saved** (with a count). Mock data through `src/api/saved.js` and `src/api/alerts.js`.
@@ -67,7 +67,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - Duplicate merging is a backend job.
 
 ### 4. Smaller items and polish
-- **Your own profile has no headline, About, college or city yet**, so it looks different from the profiles you see for other students. Decide whether to add them (needs onboarding and profile changes and a change to the profile shape; talk to the backend dev first).
+- Your own profile still has no **college** (other students show one) and onboarding does not ask for a headline or About. Add them if wanted (changes the profile shape; talk to the backend dev first).
 - Connections: more LinkedIn-style extras if wanted (comment likes, edit a post, reporting, a search for people who are not connections yet). Not built.
 - Stale or conflicting information should be visible on cards too (tooltip or small note using `warning`).
 - Decide how Not eligible items rank (currently ranked by relevance only, so they can appear near the top).
