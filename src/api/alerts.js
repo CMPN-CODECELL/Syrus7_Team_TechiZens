@@ -1,52 +1,64 @@
 // ============================================================================
-// SWAP POINT: Change Sentinel alerts (owner: backend / Supabase teammate)
+// SWAP POINT: Change Sentinel alerts
 //
 // In-app alerts that say exactly what changed in a SAVED opportunity's deadline, fee or rules.
-// Right now this is fake: alerts come from src/data/mockAlerts.js and "read" is kept in localStorage.
-// To go live, replace each body with Supabase (an alerts table filled by change detection,
-// optionally with a realtime listener). Keep names, inputs and returned shapes.
+// Signed in with Supabase: read from the `my_alerts` view (already limited to the student's saved
+// opportunities, newest first). A database trigger adds a row whenever the ingestion changes a deadline
+// or fee. "Read" is kept in the `alert_reads` table. Demo mode (no Supabase keys): there are no alerts.
 //
 // An alert looks like:
 //   { id, opportunityId, field: "deadline" | "fee" | "rules", oldValue, newValue, changedAt, read }
 // oldValue / newValue are ready-to-show text.
 // ============================================================================
 
-import { mockAlerts } from "@/data/mockAlerts"
-import { getSavedIds } from "@/api/saved"
+import { supabase } from "@/lib/supabase"
 
-const STORAGE_KEY = "nexus-alerts-read"
+const isConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
 
-function readIds() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? []
-  } catch {
-    return []
-  }
-}
-
-function writeIds(ids) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(ids))
-  } catch {
-    // Storage unavailable: read state only lasts for this session.
-  }
+async function currentUserId() {
+  if (!isConfigured) return null
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  return session?.user?.id ?? null
 }
 
 // Alerts for the student's saved opportunities only, newest first.
 export async function getAlerts() {
-  const saved = await getSavedIds()
-  const readAlertIds = readIds()
-  return mockAlerts
-    .filter((alert) => saved.includes(alert.opportunityId))
-    .map((alert) => ({ ...alert, read: readAlertIds.includes(alert.id) }))
-    .sort((a, b) => new Date(b.changedAt) - new Date(a.changedAt))
+  if (!(await currentUserId())) return []
+
+  const { data, error } = await supabase.from("my_alerts").select("*").order("changed_at", { ascending: false })
+  if (error) {
+    console.error("Could not load alerts:", error.message)
+    return []
+  }
+  return data.map((row) => ({
+    id: row.id,
+    opportunityId: row.opportunity_id,
+    field: row.field,
+    oldValue: row.old_value,
+    newValue: row.new_value,
+    changedAt: row.changed_at,
+    read: Boolean(row.read),
+  }))
+}
+
+// Remembers that these alerts were read (ignores the ones already marked).
+async function saveReads(userId, alertIds) {
+  if (alertIds.length === 0) return
+  const rows = alertIds.map((changeId) => ({ user_id: userId, change_id: changeId }))
+  const { error } = await supabase.from("alert_reads").upsert(rows, { onConflict: "user_id,change_id", ignoreDuplicates: true })
+  if (error) console.error("Could not save read alerts:", error.message)
 }
 
 export async function markAlertRead(alertId) {
-  const ids = readIds()
-  if (!ids.includes(alertId)) writeIds([...ids, alertId])
+  const userId = await currentUserId()
+  if (userId) await saveReads(userId, [alertId])
 }
 
 export async function markAllAlertsRead() {
-  writeIds(mockAlerts.map((alert) => alert.id))
+  const userId = await currentUserId()
+  if (!userId) return
+  const unread = (await getAlerts()).filter((alert) => !alert.read).map((alert) => alert.id)
+  await saveReads(userId, unread)
 }

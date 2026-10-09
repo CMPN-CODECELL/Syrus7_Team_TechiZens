@@ -74,7 +74,7 @@ export function hasWord(text, word) {
 }
 
 // Interests from the opportunity's own list, plus the ones its title and theme point to.
-function getTopics(opportunity) {
+export function getTopics(opportunity) {
   const text = `${opportunity.title ?? ""} ${opportunity.theme ?? ""}`
   const fromText = Object.entries(INTEREST_KEYWORDS)
     .filter(([, words]) => words.some((word) => hasWord(text, word)))

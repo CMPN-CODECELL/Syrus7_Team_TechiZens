@@ -46,7 +46,7 @@ GitHub pauses them after 60 days without repository activity.
 | `normalizeUnstop.js` | Same for Unstop. Registration end = deadline; `isPaid` false = free, paid = fee unknown (null); team size, skills, city and logo come from Unstop |
 | `interests.js` | Picks app interests from text, using the same keyword list as the relevance score |
 | `dedupe.js` | Merges the same event listed twice; flags a deadline conflict (Trust Layer warning) |
-| `save.js` | Upserts rows; if a deadline or fee changed, adds a row to `opportunity_changes` (Change Sentinel) |
+| `save.js` | Upserts rows. A changed deadline or fee is logged to `opportunity_changes` by a database trigger (migration 0008), so the script does not insert those itself (it would double every alert). Careful: any manual `update` of `fee` or `deadline` in Supabase also creates alerts |
 | `index.js` | Runs the steps in order and prints a summary |
 
 ## Rules it follows

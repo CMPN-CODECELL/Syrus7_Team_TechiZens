@@ -82,7 +82,7 @@ async function main() {
 
   const result = await saveAll(supabase, finalItems)
   console.log(
-    `\nSaved: ${result.created} new, ${result.updated} updated, ${result.changes} changes recorded, ${result.organizers} organizers.`
+    `\nSaved: ${result.created} new, ${result.updated} updated, ${result.changed} with a new deadline or fee (alerts are logged by the database), ${result.organizers} organizers.`
   )
 }
 

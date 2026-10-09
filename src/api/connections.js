@@ -19,9 +19,13 @@
 // ============================================================================
 
 import { getCurrentUser } from "@/api/auth"
+import { getOpportunities } from "@/api/opportunities"
 import { getConnectedIds } from "@/api/people"
 import { mockComments } from "@/data/mockComments"
 import { mockConnectionPosts } from "@/data/mockConnectionPosts"
+import { mockPeople } from "@/data/mockPeople"
+import { isClosed } from "@/lib/ingestion"
+import { getTopics, overlap } from "@/lib/scoring"
 
 const KEYS = {
   liked: "nexus-liked-posts",
@@ -57,12 +61,37 @@ function newId(prefix) {
 
 // ---- Posts -----------------------------------------------------------------
 
+// Demo only: the invented posts were written for opportunities that no longer exist. Each one is pointed at a
+// real, open opportunity that fits the author's interests (team posts prefer a team event), the same one every time.
+function hashOf(text) {
+  let hash = 0
+  for (const character of text) hash = (hash * 31 + character.charCodeAt(0)) >>> 0
+  return hash
+}
+
+function withRealOpportunity(post, opportunities) {
+  if (!post.opportunityId || opportunities.some((o) => o.id === post.opportunityId)) return post
+  const author = mockPeople.find((person) => person.id === post.author.id)
+  const open = opportunities.filter((o) => !isClosed(o))
+  const teamOnly = post.type === "looking_for_team" ? open.filter((o) => o.teamSize) : []
+  const pool = teamOnly.length > 0 ? teamOnly : open
+  if (pool.length === 0) return { ...post, opportunityId: null }
+  const best = pool
+    .map((o) => ({ o, fit: overlap(author?.interests ?? [], getTopics(o)).length, tiebreak: hashOf(post.id + o.id) }))
+    .sort((a, b) => b.fit - a.fit || a.tiebreak - b.tiebreak)[0]
+  return { ...post, opportunityId: best.o.id }
+}
+
 // Posts from the student's connections plus their own, newest first.
 export async function getConnectionPosts() {
   const connected = await getConnectedIds()
   const liked = read(KEYS.liked)
   const comments = [...mockComments, ...read(KEYS.myComments)]
-  return [...read(KEYS.myPosts), ...mockConnectionPosts.filter((post) => connected.includes(post.author.id))]
+  const opportunities = await getOpportunities()
+  const demoPosts = mockConnectionPosts
+    .filter((post) => connected.includes(post.author.id))
+    .map((post) => withRealOpportunity(post, opportunities))
+  return [...read(KEYS.myPosts), ...demoPosts]
     .map((post) => {
       const likedByMe = liked.includes(post.id)
       return {

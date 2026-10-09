@@ -1,5 +1,12 @@
 // MOCK data for the Squad Hub. The people are invented (ids match mockPeople.js).
 // Only used by src/api/squads.js while there is no backend. Delete once it is live.
+//
+// The demo candidates and squads are GENERATED for any opportunity (so they work for real, scraped
+// opportunities too): the invented students who fit the opportunity best (shared interests and skills)
+// become its candidates and squad members. The same opportunity always gets the same demo people.
+
+import { mockPeople } from "@/data/mockPeople"
+import { getTopics, overlap } from "@/lib/scoring"
 
 // In the demo, a person you contact answers "yes" this many milliseconds later (unless they are in DECLINERS).
 // A real backend works differently: the other student answers whenever they choose.
@@ -27,89 +34,59 @@ export const CONTACTS = {
   "u-16": "vikram.choudhary@example.com",
 }
 
-// Students who opted in as "looking for a team" for each team opportunity, and their weekly hours.
-export const SEEKERS = {
-  "opp-1": [
-    { personId: "u-11", hoursPerWeek: 6 },
-    { personId: "u-12", hoursPerWeek: 10 },
-    { personId: "u-15", hoursPerWeek: 6 },
-    { personId: "u-6", hoursPerWeek: 10 },
-    { personId: "u-16", hoursPerWeek: 15 },
-    { personId: "u-2", hoursPerWeek: 6 },
-  ],
-  "opp-2": [
-    { personId: "u-12", hoursPerWeek: 10 },
-    { personId: "u-2", hoursPerWeek: 6 },
-    { personId: "u-7", hoursPerWeek: 15 },
-    { personId: "u-9", hoursPerWeek: 6 },
-    { personId: "u-15", hoursPerWeek: 6 },
-  ],
-  "opp-3": [
-    { personId: "u-9", hoursPerWeek: 6 },
-    { personId: "u-16", hoursPerWeek: 10 },
-    { personId: "u-11", hoursPerWeek: 6 },
-    { personId: "u-14", hoursPerWeek: 6 },
-    { personId: "u-6", hoursPerWeek: 10 },
-  ],
-  "opp-4": [
-    { personId: "u-1", hoursPerWeek: 10 },
-    { personId: "u-5", hoursPerWeek: 3 },
-    { personId: "u-6", hoursPerWeek: 6 },
-    { personId: "u-13", hoursPerWeek: 3 },
-    { personId: "u-11", hoursPerWeek: 6 },
-  ],
-  "opp-5": [
-    { personId: "u-16", hoursPerWeek: 10 },
-    { personId: "u-9", hoursPerWeek: 6 },
-    { personId: "u-11", hoursPerWeek: 6 },
-    { personId: "u-6", hoursPerWeek: 6 },
-  ],
-  "opp-6": [
-    { personId: "u-4", hoursPerWeek: 15 },
-    { personId: "u-12", hoursPerWeek: 10 },
-    { personId: "u-3", hoursPerWeek: 10 },
-    { personId: "u-7", hoursPerWeek: 15 },
-    { personId: "u-2", hoursPerWeek: 10 },
-  ],
-  "opp-12": [
-    { personId: "u-14", hoursPerWeek: 6 },
-    { personId: "u-9", hoursPerWeek: 6 },
-    { personId: "u-3", hoursPerWeek: 10 },
-  ],
-  "opp-13": [
-    { personId: "u-11", hoursPerWeek: 6 },
-    { personId: "u-14", hoursPerWeek: 10 },
-    { personId: "u-15", hoursPerWeek: 6 },
-    { personId: "u-8", hoursPerWeek: 6 },
-    { personId: "u-6", hoursPerWeek: 6 },
-  ],
-  "opp-14": [
-    { personId: "u-10", hoursPerWeek: 6 },
-    { personId: "u-13", hoursPerWeek: 6 },
-    { personId: "u-4", hoursPerWeek: 10 },
-    { personId: "u-5", hoursPerWeek: 3 },
-  ],
-  "opp-15": [
-    { personId: "u-14", hoursPerWeek: 6 },
-    { personId: "u-9", hoursPerWeek: 10 },
-    { personId: "u-12", hoursPerWeek: 6 },
-  ],
+const SEEKER_HOURS = [3, 6, 10, 15]
+const SQUAD_HOURS = [6, 10, 15]
+
+// A small repeatable number from a text, so the same opportunity always gets the same demo people.
+function hashOf(text) {
+  let hash = 0
+  for (const character of text) hash = (hash * 31 + character.charCodeAt(0)) >>> 0
+  return hash
 }
 
-// Existing squads that are looking for members. The squad's capacity is the opportunity's maximum team size.
-// memberIds includes the leader.
-export const SQUADS = [
-  { id: "s-1", opportunityId: "opp-1", leaderId: "u-8", memberIds: ["u-8", "u-15"], lookingForSkills: ["React", "Design"], hoursPerWeek: 10 },
-  { id: "s-2", opportunityId: "opp-1", leaderId: "u-6", memberIds: ["u-6", "u-1", "u-16"], lookingForSkills: ["Python"], hoursPerWeek: 10 },
-  { id: "s-3", opportunityId: "opp-2", leaderId: "u-2", memberIds: ["u-2"], lookingForSkills: ["SQL", "Statistics"], hoursPerWeek: 6 },
-  { id: "s-4", opportunityId: "opp-2", leaderId: "u-7", memberIds: ["u-7", "u-12"], lookingForSkills: ["Python"], hoursPerWeek: 15 },
-  { id: "s-5", opportunityId: "opp-3", leaderId: "u-9", memberIds: ["u-9", "u-14"], lookingForSkills: ["Node", "JavaScript"], hoursPerWeek: 6 },
-  { id: "s-6", opportunityId: "opp-4", leaderId: "u-1", memberIds: ["u-1"], lookingForSkills: ["Flutter", "React Native"], hoursPerWeek: 10 },
-  { id: "s-7", opportunityId: "opp-4", leaderId: "u-6", memberIds: ["u-6", "u-5", "u-13"], lookingForSkills: ["React Native"], hoursPerWeek: 6 },
-  { id: "s-8", opportunityId: "opp-5", leaderId: "u-16", memberIds: ["u-16", "u-9"], lookingForSkills: ["JavaScript", "APIs"], hoursPerWeek: 10 },
-  { id: "s-9", opportunityId: "opp-6", leaderId: "u-4", memberIds: ["u-4", "u-3"], lookingForSkills: ["PyTorch", "Python"], hoursPerWeek: 15 },
-  { id: "s-10", opportunityId: "opp-6", leaderId: "u-12", memberIds: ["u-12"], lookingForSkills: ["Python", "Statistics"], hoursPerWeek: 10 },
-  { id: "s-11", opportunityId: "opp-13", leaderId: "u-15", memberIds: ["u-15", "u-8", "u-11"], lookingForSkills: ["Design", "Pitching"], hoursPerWeek: 6 },
-  { id: "s-12", opportunityId: "opp-14", leaderId: "u-13", memberIds: ["u-13"], lookingForSkills: ["Linux", "Networking"], hoursPerWeek: 6 },
-  { id: "s-13", opportunityId: "opp-15", leaderId: "u-14", memberIds: ["u-14"], lookingForSkills: ["Pitching", "Analytics"], hoursPerWeek: 6 },
-]
+// The demo students, best fit for this opportunity first (shared interests count double, then shared skills).
+function rankedPeople(opportunity) {
+  const topics = getTopics(opportunity)
+  return mockPeople
+    .map((person) => ({
+      person,
+      fit: overlap(person.interests, topics).length * 2 + overlap(person.skills, opportunity.skills ?? []).length,
+      tiebreak: hashOf(`${opportunity.id}|${person.id}`),
+    }))
+    .sort((a, b) => b.fit - a.fit || a.tiebreak - b.tiebreak)
+    .map((item) => item.person)
+}
+
+// Students who opted in as "looking for a team" for this opportunity, with their weekly hours.
+export function getSeekers(opportunity) {
+  return rankedPeople(opportunity)
+    .slice(0, 6)
+    .map((person) => ({
+      personId: person.id,
+      hoursPerWeek: SEEKER_HOURS[hashOf(`${opportunity.id}|h|${person.id}`) % SEEKER_HOURS.length],
+    }))
+}
+
+// Existing squads looking for members. Capacity is the opportunity's maximum team size, and each
+// demo squad has at least one free spot. memberIds includes the leader.
+export function getSquads(opportunity) {
+  const capacity = opportunity.teamSize?.max ?? 0
+  if (capacity < 2) return []
+  const pool = rankedPeople(opportunity).slice(5) // different people than the candidates above
+  const extraMembers = Math.min(capacity - 2, 2)
+
+  return [0, 1].map((index) => {
+    const start = index * (1 + extraMembers)
+    const members = pool.slice(start, start + 1 + extraMembers)
+    const leader = members[0]
+    const wanted = (opportunity.skills ?? []).filter((skill) => !leader.skills.includes(skill)).slice(0, 2)
+    return {
+      id: `s-${opportunity.id}-${index + 1}`,
+      opportunityId: opportunity.id,
+      leaderId: leader.id,
+      memberIds: members.map((person) => person.id),
+      lookingForSkills: wanted.length > 0 ? wanted : (opportunity.skills ?? []).slice(0, 2),
+      hoursPerWeek: SQUAD_HOURS[hashOf(`${opportunity.id}|s|${index}`) % SQUAD_HOURS.length],
+    }
+  })
+}
