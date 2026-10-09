@@ -2,7 +2,8 @@ import { useState } from "react"
 import { ArrowLeft, ArrowRight, Check, Star, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import BeginnerToggle from "@/components/BeginnerToggle"
+import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
 import { INTEREST_OPTIONS } from "@/data/opportunities"
@@ -10,7 +11,6 @@ import { YEAR_OPTIONS } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
 const SKILL_SUGGESTIONS = ["Python", "JavaScript", "React", "HTML", "CSS", "Figma", "SQL", "Linux"]
-const HOUR_OPTIONS = [3, 6, 10, 15, 20].map((n) => ({ value: n, label: `${n} hrs` }))
 const BUDGET_OPTIONS = [
   { value: 0, label: "Free only" },
   { value: 500, label: "Up to ₹500" },
@@ -63,20 +63,26 @@ export default function OnboardingPage() {
     },
     {
       title: "What can you already do?",
-      hint: "Optional. Add your skills.",
+      hint: "Optional. New to this? Just say so.",
       canContinue: true,
       content: (
-        <TagPicker
-          label="Skills"
-          selected={profile.skills}
-          suggestions={SKILL_SUGGESTIONS}
-          onChange={(skills) => updateProfile({ skills })}
-        />
+        <div className="space-y-4">
+          <BeginnerToggle
+            value={profile.isBeginner}
+            onChange={(isBeginner) => updateProfile({ isBeginner })}
+          />
+          <TagPicker
+            label="Skills"
+            selected={profile.skills}
+            suggestions={SKILL_SUGGESTIONS}
+            onChange={(skills) => updateProfile({ skills })}
+          />
+        </div>
       ),
     },
     {
-      title: "Which year are you in?",
-      hint: "Some opportunities are year-restricted.",
+      title: "Where are you in your studies?",
+      hint: "Some opportunities are restricted by year.",
       canContinue: true,
       content: (
         <ChoiceGrid
@@ -89,26 +95,11 @@ export default function OnboardingPage() {
     {
       title: "Where are you based?",
       hint: "For in-person events near you.",
-      canContinue: profile.location.trim().length > 0,
+      canContinue: profile.location !== "",
       content: (
-        <Input
+        <LocationPicker
           value={profile.location}
-          onChange={(event) => updateProfile({ location: event.target.value })}
-          placeholder="City"
-          aria-label="Location"
-          className="h-11"
-        />
-      ),
-    },
-    {
-      title: "How much time do you have?",
-      hint: "Hours per week you can spare.",
-      canContinue: true,
-      content: (
-        <ChoiceGrid
-          options={HOUR_OPTIONS}
-          value={profile.hoursPerWeek}
-          onChange={(hoursPerWeek) => updateProfile({ hoursPerWeek })}
+          onChange={(location) => updateProfile({ location })}
         />
       ),
     },

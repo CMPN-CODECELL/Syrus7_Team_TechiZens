@@ -7,9 +7,9 @@ const STORAGE_KEY = "nexus-user"
 const emptyProfile = {
   skills: [],
   interests: [],
+  isBeginner: false,
   year: 2,
-  location: "Mumbai",
-  hoursPerWeek: 6,
+  location: "",
   budget: 500,
 }
 

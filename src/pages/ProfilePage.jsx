@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import BeginnerToggle from "@/components/BeginnerToggle"
+import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
 import { INTEREST_OPTIONS } from "@/data/opportunities"
@@ -43,7 +45,11 @@ export default function ProfilePage() {
         <CardHeader>
           <CardTitle>Skills</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <BeginnerToggle
+            value={profile.isBeginner}
+            onChange={(isBeginner) => updateProfile({ isBeginner })}
+          />
           <TagPicker
             label="Skills"
             selected={profile.skills}
@@ -76,22 +82,10 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
-            <Input
+            <LocationPicker
               id="location"
               value={profile.location}
-              onChange={(event) => updateProfile({ location: event.target.value })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="hours">Weekly hours</Label>
-            <Input
-              id="hours"
-              type="number"
-              min="0"
-              max="80"
-              value={profile.hoursPerWeek}
-              onChange={setNumber("hoursPerWeek")}
+              onChange={(location) => updateProfile({ location })}
             />
           </div>
 

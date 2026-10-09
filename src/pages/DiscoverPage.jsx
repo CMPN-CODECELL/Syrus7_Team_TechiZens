@@ -46,7 +46,7 @@ export default function DiscoverPage() {
     .filter(
       ({ opportunity }) =>
         !search ||
-        [opportunity.title, opportunity.organizer, ...opportunity.interests, ...opportunity.skills]
+        [opportunity.title, opportunity.organizer.name, ...opportunity.interests, ...opportunity.skills]
           .join(" ")
           .toLowerCase()
           .includes(search)
@@ -104,7 +104,8 @@ export default function DiscoverPage() {
         </div>
 
         {feed.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Each card spans 5 rows (subgrid) so sections line up across a row */}
             {feed.map(({ opportunity, relevance, reason, eligibility }) => (
               <OpportunityCard
                 key={opportunity.id}

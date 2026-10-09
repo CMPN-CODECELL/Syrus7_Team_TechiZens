@@ -3,11 +3,16 @@
 
 export const LOW_COST_LIMIT = 500 // INR
 
+// Values are ordered so that a higher number means further along (used for eligibility).
 export const YEAR_OPTIONS = [
+  { value: -2, label: "Class 10th" },
+  { value: -1, label: "Class 11th" },
+  { value: 0, label: "Class 12th" },
   { value: 1, label: "1st year" },
   { value: 2, label: "2nd year" },
   { value: 3, label: "3rd year" },
   { value: 4, label: "Final year" },
+  { value: 5, label: "Graduated" },
 ]
 
 export function yearLabel(year) {
@@ -20,7 +25,8 @@ function overlap(a, b) {
 }
 
 // Relevance: a 0-100 score plus a plain-language reason.
-// Ranked by skills, interests, weekly bandwidth and budget.
+// Ranked by interests, skills, budget and (for beginners) level.
+// Weekly hours will come back with the team-building section.
 export function getRelevance(opportunity, profile) {
   const matchedInterests = overlap(opportunity.interests, profile.interests)
   const matchedSkills = overlap(opportunity.skills, profile.skills)
@@ -28,23 +34,28 @@ export function getRelevance(opportunity, profile) {
   const interestFit = matchedInterests.length / Math.min(opportunity.interests.length, 2)
   const skillFit = matchedSkills.length / Math.max(opportunity.skills.length, 1)
   const budgetFit = opportunity.fee <= profile.budget ? 1 : 0
-  const hoursFit = opportunity.hoursPerWeek <= profile.hoursPerWeek ? 1 : 0
+  // Beginners prefer beginner-level opportunities; everyone else is neutral.
+  const levelFit = !profile.isBeginner ? 1 : { Beginner: 1, Intermediate: 0.5, Advanced: 0 }[opportunity.level]
 
   const score =
-    50 * Math.min(interestFit, 1) + 20 * Math.min(skillFit, 1) + 15 * budgetFit + 15 * hoursFit
+    50 * Math.min(interestFit, 1) +
+    15 * Math.min(skillFit, 1) +
+    20 * budgetFit +
+    15 * levelFit
 
   // Short, plain reasons so cards stay uncluttered.
   const reasons = []
   const matches = [...matchedInterests, ...matchedSkills]
   if (matches.length > 0) reasons.push(`Matches ${matches.join(", ")}`)
   else reasons.push("No match with your profile")
+  if (profile.isBeginner && opportunity.level === "Beginner") reasons.push("beginner-friendly")
+  if (profile.isBeginner && opportunity.level === "Advanced") reasons.push("advanced level")
   if (budgetFit === 0) reasons.push("above your budget")
-  if (hoursFit === 0) reasons.push("needs more hours")
 
   return { relevance: Math.round(score), reason: reasons.join(" · ") }
 }
 
-// Eligibility: Qualified or Disqualified, always with a reason when disqualified.
+// Eligibility: Eligible or Not eligible, always with a reason when not eligible.
 export function getEligibility(opportunity, profile) {
   if (opportunity.minYear && profile.year < opportunity.minYear) {
     return {
