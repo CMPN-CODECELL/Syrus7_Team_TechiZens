@@ -38,11 +38,18 @@ export default function CategoryCards({ selected, onSelect, available = null }) 
             aria-pressed={isSelected}
             onClick={() => onSelect(isSelected ? null : category.id)}
             className={cn(
-              "flex shrink-0 items-center gap-2 rounded-xl border bg-card px-3.5 py-2.5 text-sm font-medium whitespace-nowrap transition hover:bg-muted sm:gap-3 sm:p-4 sm:text-base",
+              "flex shrink-0 items-center gap-2 rounded-2xl border bg-card px-3.5 py-2.5 text-sm font-medium whitespace-nowrap shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:gap-3 sm:p-4 sm:text-base",
               isSelected && "border-primary bg-primary text-primary-foreground hover:bg-primary"
             )}
           >
-            <Icon className="size-5 shrink-0" />
+            <span
+              className={cn(
+                "grid size-8 shrink-0 place-items-center rounded-lg sm:size-9",
+                isSelected ? "bg-primary-foreground/20" : "bg-primary/10 text-primary"
+              )}
+            >
+              <Icon className="size-4 sm:size-5" />
+            </span>
             {category.label}
           </button>
         )

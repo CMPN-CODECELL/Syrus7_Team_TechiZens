@@ -106,6 +106,8 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 
 - **MLH source + first full refresh (2026-10-10):** `scripts/ingest/sources/mlh.js` + `normalizeMlh.js` read Major League Hacking's season pages (the event list is JSON inside the HTML; this year's and next year's season). 71 upcoming events; MLH gives dates but **no registration deadline, so MLH rows have `deadline = null` and show "Check details"** (honest, not guessed). HackerEarth added the same day (3 live items). The full pipeline (Devpost, Unstop, HackerEarth, MLH, duplicates merged: 8 merged, 7 of them Devpost + MLH) was run and **written to the live database through the Supabase CLI login** (no service-role key needed): 560 opportunities now (Devpost 152, Unstop 341, MLH 64, HackerEarth 3). The 10 deadline changes it caused were logged as Change Sentinel alerts. The daily GitHub Action still needs its two secrets to run by itself.
 
+- **UI refresh (2026-10-10):** indigo/violet palette in the design tokens (`src/index.css`, light and dark), rounder corners, layered card shadows (a `[data-slot="card"]` rule, so the generated `ui/` files are untouched), a soft colour glow behind the page, a gradient hero with the search on Discover, icon chips on the category cards and a hover lift on opportunity cards. Do not add `background-attachment: fixed` to the page background: it made scrolling slow to paint.
+
 ## Remaining (frontend), in suggested order
 
 Squad Hub and the AI search are **done on the frontend** (see Done); what is left for them is backend work (see the backend list below).

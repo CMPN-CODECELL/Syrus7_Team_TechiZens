@@ -29,7 +29,7 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
   return (
-    <Card className="row-span-5 mb-4 grid grid-cols-[minmax(0,1fr)] grid-rows-subgrid gap-0 py-0">
+    <Card className="row-span-5 mb-4 grid grid-cols-[minmax(0,1fr)] grid-rows-subgrid gap-0 py-0 hover:-translate-y-0.5">
       {/* Top: organizer, relevance, trust */}
       <div className="flex items-center justify-between gap-2 px-5 pt-5">
         <div className="flex min-w-0 items-center gap-2.5">

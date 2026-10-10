@@ -204,7 +204,11 @@ export default function DiscoverPage({ onOpen }) {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-semibold tracking-tight">Hi, {firstName}</h1>
+      <div className="rounded-3xl bg-gradient-to-br from-primary via-[oklch(0.5_0.2_295)] to-[oklch(0.58_0.19_335)] p-5 text-primary-foreground shadow-lg sm:p-8">
+        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Hi, {firstName}</h1>
+        <p className="mt-1 mb-5 text-sm text-primary-foreground/80 sm:text-base">
+          {opportunities === null ? "Finding opportunities for you..." : `${scored.length} open opportunities, ranked for you.`}
+        </p>
 
       {/* Typing searches by keyword. Enter or Ask AI reads it as a plain-English request. */}
       <form onSubmit={handleAsk} className="relative">
@@ -218,11 +222,10 @@ export default function DiscoverPage({ onOpen }) {
           }}
           placeholder={SEARCH_PLACEHOLDER}
           aria-label="Search opportunities or ask the AI"
-          className="h-11 pr-28 pl-9"
+          className="h-12 rounded-xl border-transparent bg-background pr-28 pl-9 text-base text-foreground shadow-sm"
         />
         <Button
           type="submit"
-          variant="ghost"
           size="sm"
           disabled={!searchTerm.trim()}
           className="absolute top-1/2 right-2 -translate-y-1/2"
@@ -230,6 +233,7 @@ export default function DiscoverPage({ onOpen }) {
           <Sparkles /> Ask AI
         </Button>
       </form>
+      </div>
 
       <CategoryCards selected={category} onSelect={handleCategory} available={availableCategories} />
 

@@ -38,7 +38,7 @@ export default function LoginPage({ onOpenLegal }) {
   const { signIn } = useUser()
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
+    <div className="flex min-h-screen flex-col">
       <div className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16">
         {/* Intro */}
         <section>
