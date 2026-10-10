@@ -18,11 +18,45 @@
 // ============================================================================
 
 import { getOpportunities } from "@/api/opportunities"
+import { CATEGORIES, INTEREST_OPTIONS } from "@/data/constants"
+import { criteriaFromAi } from "@/lib/aiCriteria"
+import { supabase } from "@/lib/supabase"
 import { findMatches, parseQuery } from "@/lib/mockSearchParser"
+
+const isConfigured = Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY)
+
+// Asks the `ai-search` Edge Function (supabase/functions/ai-search) to read the request. Returns criteria, or null
+// when the AI is not available (not signed in, no API key on the server, an error, a slow answer): the caller then
+// uses the rule-based reader, so search always works.
+async function readWithAi(query, profile) {
+  if (!isConfigured) return null
+  try {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    if (!session) return null // demo mode: nobody is signed in, so the function would refuse
+
+    const call = supabase.functions.invoke("ai-search", {
+      body: {
+        query,
+        today: new Date().toLocaleDateString("en-CA"),
+        interests: INTEREST_OPTIONS,
+        categories: CATEGORIES.map((c) => c.id),
+      },
+    })
+    const timeout = new Promise((resolve) => setTimeout(() => resolve({ error: new Error("timeout") }), 8000))
+    const { data, error } = await Promise.race([call, timeout])
+    if (error || !data?.criteria) return null
+    return criteriaFromAi(data.criteria, { text: query, profile })
+  } catch {
+    return null
+  }
+}
 
 export async function searchWithAI({ query, profile }) {
   const opportunities = await getOpportunities()
-  const criteria = parseQuery(query, { profile })
+  const aiCriteria = await readWithAi(query, profile)
+  const criteria = aiCriteria ?? parseQuery(query, { profile })
   const { results, droppedKeys, keys } = findMatches(opportunities, criteria, profile)
 
   const understood = keys.map((key) => ({ label: criteria[key].label, dropped: droppedKeys.includes(key) }))
@@ -45,6 +79,7 @@ export async function searchWithAI({ query, profile }) {
 
   return {
     understood,
+    engine: aiCriteria ? "ai" : "rules", // which reader understood the request (shown on the search panel)
     message,
     results: results.map(({ opportunity, relevance, reason }) => ({ opportunityId: opportunity.id, relevance, reason })),
   }

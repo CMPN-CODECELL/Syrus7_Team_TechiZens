@@ -26,7 +26,9 @@ export default function AiSearchPanel({ query, data, onClear }) {
           <>
             {data.understood.length > 0 && (
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">I understood:</span>
+                <span className="text-xs text-muted-foreground">
+                  {data.engine === "ai" ? "AI understood:" : "I understood:"}
+                </span>
                 {data.understood.map((part) => (
                   <Badge
                     key={part.label}
