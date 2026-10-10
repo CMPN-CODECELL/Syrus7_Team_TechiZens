@@ -1,7 +1,7 @@
 # Nexus
 
 **Verified opportunity discovery and squad matching for college students.**
-Team TechiZens · Syrus 2026 · Problem statement PS3: *Intelligent Discovery of Practical Learning Opportunities*.
+Team TechiZens · Teammate · Syrus 2026 · Problem statement PS3: *Intelligent Discovery of Practical Learning Opportunities*.
 
 Students today search LinkedIn, event sites and college notice boards by hand, and the listings are inconsistent,
 duplicated, and often miss the deadline, eligibility or location. Nexus collects opportunities from real sources,
