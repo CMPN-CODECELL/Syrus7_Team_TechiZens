@@ -33,11 +33,13 @@ export const MORE_FILTERS = [
 ]
 export const ALL_FILTERS = [...FILTERS, ...MORE_FILTERS]
 
-// Sort options. Ties fall back to best match, then the nearest deadline. Missing values go last.
+// Sort options. Best match puts eligible ones first. Ties fall back to best match, then the nearest deadline. Missing values go last.
 const byDeadline = (a, b) => (a.opportunity.deadline ?? "9999").localeCompare(b.opportunity.deadline ?? "9999")
 const byRelevance = (a, b) => b.relevance - a.relevance
+// Ones the student can enter come before ones they cannot (only when the listing states a requirement).
+const byEligible = (a, b) => Number(b.eligibility?.qualified ?? true) - Number(a.eligibility?.qualified ?? true)
 export const SORTS = [
-  { id: "match", label: "Best match", compare: (a, b) => byRelevance(a, b) || byDeadline(a, b) },
+  { id: "match", label: "Best match", compare: (a, b) => byEligible(a, b) || byRelevance(a, b) || byDeadline(a, b) },
   { id: "soonest", label: "Deadline: soonest", compare: (a, b) => byDeadline(a, b) || byRelevance(a, b) },
   {
     id: "latest",

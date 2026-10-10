@@ -39,6 +39,7 @@ export function overlap(a, b) {
 //   interests  75%   how many of YOUR interests it covers (two or more = full marks)
 //   skills     25%   whether it uses skills you have (left out when the opportunity lists none,
 //                    so an opportunity with no skills is not punished for it)
+// (Two matches fill 85% of that; matching more of your interests, up to 5, adds the last 15%.)
 // An opportunity that says nothing about its topic gets a neutral 40%: below a real partial
 // match (50%), above a clear mismatch (0%).
 // Step 2, practical fit: for beginners the topic score is reduced when the opportunity is too
@@ -50,6 +51,8 @@ export function overlap(a, b) {
 const INTEREST_SHARE = 0.75
 const SKILL_SHARE = 0.25
 const UNKNOWN_TOPIC_FIT = 0.4
+const DEPTH_SHARE = 0.15 // part of the interest score that rewards matching more than two interests
+const DEPTH_CAP = 5
 const MIN_SCORE = 10
 const LEVEL_FACTOR_FOR_BEGINNERS = { Beginner: 1, Intermediate: 0.85, Advanced: 0.6 }
 
@@ -120,14 +123,24 @@ export function hasWord(text, word) {
 // Topics already worked out, per opportunity object (a new object after a reload gets a fresh entry).
 const topicsCache = new WeakMap()
 
+// Only a real write-up is worth reading. Short descriptions ("Hackathon hosted by X on Devpost") are
+// boilerplate, and words like "community" in them would point to the wrong topic.
+const MIN_DESCRIPTION_LENGTH = 150
+
 // Interests from the opportunity's own list, plus the ones its title and theme point to.
+// When none of that gives a topic, a long description is read as a last resort.
 export function getTopics(opportunity) {
   const cached = topicsCache.get(opportunity)
   if (cached) return cached
-  const text = `${opportunity.title ?? ""} ${opportunity.theme ?? ""}`
-  const fromText = Object.entries(INTEREST_KEYWORDS)
-    .filter(([, words]) => words.some((word) => hasWord(text, word)))
-    .map(([interest]) => interest)
+  const topicsIn = (text) =>
+    Object.entries(INTEREST_KEYWORDS)
+      .filter(([, words]) => words.some((word) => hasWord(text, word)))
+      .map(([interest]) => interest)
+  let fromText = topicsIn(`${opportunity.title ?? ""} ${opportunity.theme ?? ""}`)
+  const description = opportunity.description ?? ""
+  if (fromText.length === 0 && (opportunity.interests ?? []).length === 0 && description.length >= MIN_DESCRIPTION_LENGTH) {
+    fromText = topicsIn(description)
+  }
   const topics = [...new Set([...(opportunity.interests ?? []), ...fromText])]
   topicsCache.set(opportunity, topics)
   return topics
@@ -144,7 +157,12 @@ export function getRelevance(opportunity, profile) {
   const wanted = Math.min(profileInterests.length, 2)
   const topicKnown = listedInterests.length > 0 || getTopics(opportunity).length > 0
   let interestFit
-  if (wanted > 0 && matchedInterests.length > 0) interestFit = Math.min(matchedInterests.length / wanted, 1)
+  if (wanted > 0 && matchedInterests.length > 0) {
+    // Two matches already fill most of the score; extra matches add a little, so a wider overlap still ranks higher.
+    const base = Math.min(matchedInterests.length / wanted, 1)
+    const depth = Math.min(matchedInterests.length / Math.min(profileInterests.length, DEPTH_CAP), 1)
+    interestFit = (1 - DEPTH_SHARE) * base + DEPTH_SHARE * depth
+  }
   else if (topicKnown && wanted > 0) interestFit = 0
   else interestFit = UNKNOWN_TOPIC_FIT // topic not listed, or the student has not chosen interests yet
 

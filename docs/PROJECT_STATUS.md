@@ -108,6 +108,8 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 
 - **UI refresh (2026-10-10):** indigo/violet palette in the design tokens (`src/index.css`, light and dark), rounder corners, layered card shadows (a `[data-slot="card"]` rule, so the generated `ui/` files are untouched), a soft colour glow behind the page, a gradient hero with the search on Discover, icon chips on the category cards and a hover lift on opportunity cards. Do not add `background-attachment: fixed` to the page background: it made scrolling slow to paint.
 
+- 2026-10-10: Relevance refined (`src/lib/scoring.js`): matching more than two interests now adds a little (up to 5), and a long description (150+ characters, in practice Unstop) is read for topics when the title, theme and listed interests give none. Best match now lists eligible opportunities before ineligible ones.
+
 ## Remaining (frontend), in suggested order
 
 Squad Hub and the AI search are **done on the frontend** (see Done); what is left for them is backend work (see the backend list below).
