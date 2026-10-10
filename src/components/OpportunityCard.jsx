@@ -1,4 +1,4 @@
-import { Bookmark, BookmarkCheck, CircleCheck, CircleX, ShieldCheck, TriangleAlert } from "lucide-react"
+import { Bookmark, BookmarkCheck, CircleCheck, CircleX, Scale, ShieldCheck, TriangleAlert } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -25,7 +25,7 @@ function Fact({ label, value }) {
 // so this component does not care where the numbers come from.
 // The card has 5 rows (top, title, facts, notes, footer). It uses a CSS subgrid so each row
 // lines up with the same row in neighbouring cards. See the grid in DiscoverPage.
-export default function OpportunityCard({ opportunity, relevance, reason, eligibility, onOpen, saved, onToggleSave }) {
+export default function OpportunityCard({ opportunity, relevance, reason, eligibility, onOpen, saved, onToggleSave, comparing = false, onToggleCompare }) {
   const categoryLabel = CATEGORIES.find((c) => c.id === opportunity.category)?.singular
 
   return (
@@ -98,6 +98,18 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
         <Button className="flex-1" variant="outline" onClick={() => onOpen(opportunity.id)}>
           View
         </Button>
+        {onToggleCompare && opportunity.category === "hackathons" && (
+          <Button
+            variant={comparing ? "secondary" : "ghost"}
+            size="icon"
+            aria-pressed={comparing}
+            aria-label={comparing ? "Remove from comparison" : "Add to comparison"}
+            title={comparing ? "In comparison" : "Compare hackathons"}
+            onClick={() => onToggleCompare(opportunity.id)}
+          >
+            <Scale />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"

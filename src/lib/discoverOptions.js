@@ -1,5 +1,6 @@
 // Filters and sort options for the Discover feed. Plain functions, so they are easy to test.
 
+import { LOW_COST_MAX } from "@/lib/compare"
 import { isoDaysFromToday, needsCheck, todayIso } from "@/lib/ingestion"
 import { cityOf } from "@/lib/location"
 import { isSustainability } from "@/lib/scoring"
@@ -7,7 +8,9 @@ import { isSustainability } from "@/lib/scoring"
 // The POC filters (the Free / Low-Cost one was removed by the product owner on 2026-10-09: prices are not tracked). Each test gets the opportunity and the student's profile.
 export const FILTERS = [
   { id: "beginner", label: "Beginner-Friendly", test: (o) => o.level === "Beginner" },
-  { id: "online", label: "Online", test: (o) => o.format === "Online" },
+  { id: "online", label: "Online / Remote", test: (o) => o.format === "Online" },
+  // Only listings that state a fee can match: an unlisted fee is unknown, not free.
+  { id: "lowcost", label: "Free / Low-Cost", test: (o) => o.fee !== null && o.fee !== undefined && o.fee <= LOW_COST_MAX },
   { id: "sustainability", label: "Sustainability & Social Impact", test: isSustainability },
 ]
 

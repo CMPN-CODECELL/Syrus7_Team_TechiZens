@@ -6,10 +6,13 @@ import AiSearchPanel from "@/components/AiSearchPanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import CategoryCards from "@/components/CategoryCards"
+import ComparePanel from "@/components/ComparePanel"
+import CompareTray from "@/components/CompareTray"
 import OpportunityCard from "@/components/OpportunityCard"
 import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
 import { CATEGORIES } from "@/data/constants"
+import { MAX_COMPARE } from "@/lib/compare"
 import { ALL_FILTERS, FILTERS, MORE_FILTERS, SORTS } from "@/lib/discoverOptions"
 import { isClosed } from "@/lib/ingestion"
 import { getEligibility, getRelevance } from "@/lib/scoring"
@@ -37,6 +40,9 @@ export default function DiscoverPage({ onOpen }) {
   const [refreshing, setRefreshing] = useState(false)
   // AI search: null = not used, otherwise { query, data } (data is null while it is thinking).
   const [ai, setAi] = useState(null)
+  // Hackathons picked for comparison (ids), and whether the comparison is open.
+  const [compareIds, setCompareIds] = useState([])
+  const [comparing, setComparing] = useState(false)
 
   useEffect(() => {
     getOpportunities().then(setOpportunities).catch(() => setLoadError(true))
@@ -82,6 +88,12 @@ export default function DiscoverPage({ onOpen }) {
     } catch {
       setAi({ query, data: { understood: [], message: "The AI search could not run. Please try again.", results: [] } })
     }
+  }
+
+  function toggleCompare(id) {
+    setCompareIds((current) =>
+      current.includes(id) ? current.filter((x) => x !== id) : current.length < MAX_COMPARE ? [...current, id] : current
+    )
   }
 
   function handleCategory(id) {
@@ -182,6 +194,8 @@ export default function DiscoverPage({ onOpen }) {
             onOpen={onOpen}
             saved={savedIds.includes(opportunity.id)}
             onToggleSave={toggleSave}
+            comparing={compareIds.includes(opportunity.id)}
+            onToggleCompare={toggleCompare}
           />
         ))}
       </div>
@@ -220,7 +234,15 @@ export default function DiscoverPage({ onOpen }) {
       <CategoryCards selected={category} onSelect={handleCategory} available={availableCategories} />
 
       <section className="space-y-4">
-        {ai ? (
+        {comparing ? (
+          <ComparePanel
+            opportunities={compareIds.map((id) => byId[id]).filter(Boolean)}
+            profile={profile}
+            onRemove={toggleCompare}
+            onClose={() => setComparing(false)}
+            onOpen={onOpen}
+          />
+        ) : ai ? (
           <>
             <AiSearchPanel query={ai.query} data={ai.data} onClear={() => setAi(null)} />
             {ai.data && aiCards.length > 0 && (
@@ -318,6 +340,14 @@ export default function DiscoverPage({ onOpen }) {
           </>
         )}
       </section>
+
+      {!comparing && (
+        <CompareTray
+          count={compareIds.length}
+          onCompare={() => setComparing(true)}
+          onClear={() => setCompareIds([])}
+        />
+      )}
     </div>
   )
 }
