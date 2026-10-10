@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { ArrowLeft, Bookmark, BookmarkCheck, CalendarX, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert, Users } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import OrganizerLogo from "@/components/OrganizerLogo"
+import ParticipationButton from "@/components/ParticipationButton"
 import SourceBadge from "@/components/SourceBadge"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
@@ -235,6 +236,7 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
             {isSaved ? <BookmarkCheck /> : <Bookmark />}
             {isSaved ? "Saved" : "Save"}
           </Button>
+          <ParticipationButton opportunity={opportunity} />
           {!closed && !isSchoolStudent(user.profile) && (
             <Button variant="outline" size="lg" className="h-11 px-4 text-base" onClick={() => openSquad(opportunity.id)}>
               <Users />
