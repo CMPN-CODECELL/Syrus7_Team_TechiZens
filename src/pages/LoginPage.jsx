@@ -1,4 +1,5 @@
 import { Compass, ShieldCheck, Users } from "lucide-react"
+import Footer from "@/components/Footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { isDemoLogin } from "@/api/auth"
@@ -33,12 +34,12 @@ function GoogleIcon() {
   )
 }
 
-export default function LoginPage() {
+export default function LoginPage({ onOpenLegal }) {
   const { signIn } = useUser()
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="mx-auto grid min-h-screen max-w-5xl items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16">
+    <div className="flex min-h-screen flex-col bg-muted/30">
+      <div className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:gap-16">
         {/* Intro */}
         <section>
           <p className="flex items-center gap-3 text-2xl font-semibold tracking-tight">
@@ -69,6 +70,17 @@ export default function LoginPage() {
               <GoogleIcon />
               Sign in with Google
             </Button>
+            <p className="text-center text-xs text-muted-foreground">
+              By signing in you agree to the{" "}
+              <button type="button" onClick={() => onOpenLegal("terms")} className="underline underline-offset-4 hover:text-foreground">
+                Terms of Use
+              </button>{" "}
+              and the{" "}
+              <button type="button" onClick={() => onOpenLegal("privacy")} className="underline underline-offset-4 hover:text-foreground">
+                Privacy Policy
+              </button>
+              . School students need a parent or guardian's permission.
+            </p>
             {isDemoLogin && (
               <p className="text-center text-xs text-muted-foreground">
                 Demo mode · no real Google account is used.
@@ -77,6 +89,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
+      <Footer onOpen={onOpenLegal} />
     </div>
   )
 }

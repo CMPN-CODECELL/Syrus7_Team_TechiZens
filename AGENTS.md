@@ -222,6 +222,14 @@ A LinkedIn-style timeline of activity posts from the students the user is connec
 
 ---
 
+## Students under 18 (product owner decision, 2026-10-10)
+
+Students who pick a school year (Class 10th to 12th) are treated as under 18. For them Connections, Squad Hub,
+"Find teammates" and other students' profiles are switched off (`src/lib/age.js`, `isSchoolStudent`). Any new social
+feature must respect this. The legal pages (`src/data/legal.js`) describe it, so change both together.
+
+---
+
 ## Student Profile
 
 The POC describes a short student profile containing:

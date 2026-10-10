@@ -98,6 +98,19 @@ weekly hours moved from the profile into the Squad Hub.
 
 ---
 
+## Legal and privacy
+
+Added 2026-10-10 (draft, **not reviewed by a lawyer**; the contact placeholders in `src/data/legal.js` must be filled in before a public launch):
+
+- **Pages:** Privacy Policy, Terms of Use, Sources and attribution, Contact and grievances (footer on every screen and on the login page). Text lives in `src/data/legal.js`.
+- **Consent and notices:** a consent line on the login page, a short cookie / browser-storage notice, a footer disclaimer, and a tooltip on what **Verified** means.
+- **Students under 18:** school years (Class 10th to 12th) are treated as minors. They confirm a parent or guardian agrees during onboarding, and **Connections, Squad Hub and "Find teammates" are switched off** for them. The confirmation is a tick box: it is **not verified or stored**.
+- **User rights:** **Delete my account** on the Profile page; **Report** buttons on posts, comments and profiles.
+- **Database:** delete and report use `supabase/migrations/0019_account_deletion_and_reports.sql` (applied 2026-10-10).
+- **Demo data** in Connections and Squad Hub is labelled as invented. The code is under the [MIT license](LICENSE).
+
+---
+
 ## How the data gets in
 
 ```

@@ -13,6 +13,7 @@ import {
 import DeadlineLine from "@/components/DeadlineLine"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import PersonLink from "@/components/PersonLink"
+import ReportButton from "@/components/ReportButton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -169,6 +170,9 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
                   </Button>
                 </>
               ))}
+            <div className="ml-auto">
+              <ReportButton contentType="profile" contentId={person.id} label="Report profile" size="sm" />
+            </div>
           </div>
         </CardContent>
       </Card>

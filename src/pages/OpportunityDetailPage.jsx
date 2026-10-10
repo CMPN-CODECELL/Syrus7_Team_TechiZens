@@ -18,6 +18,7 @@ import {
   formatTeamSize,
 } from "@/lib/format"
 import { getMissingDetails, isClosed, needsCheck } from "@/lib/ingestion"
+import { isSchoolStudent } from "@/lib/age"
 import { getEligibility, getRelevance } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
@@ -231,7 +232,7 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
             {isSaved ? <BookmarkCheck /> : <Bookmark />}
             {isSaved ? "Saved" : "Save"}
           </Button>
-          {!closed && (
+          {!closed && !isSchoolStudent(user.profile) && (
             <Button variant="outline" size="lg" className="h-11 px-4 text-base" onClick={() => openSquad(opportunity.id)}>
               <Users />
               {opportunity.teamSize ? "Find teammates" : "Connect with others"}

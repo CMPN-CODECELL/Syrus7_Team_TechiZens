@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { Send, Trash2, X } from "lucide-react"
 import { addComment, deleteComment, getComments } from "@/api/connections"
 import PersonLink from "@/components/PersonLink"
+import ReportButton from "@/components/ReportButton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -33,10 +34,11 @@ function Comment({ comment, now, onReply, onDelete }) {
           <p className="truncate text-xs text-muted-foreground">{details}</p>
           <p className="mt-1 text-sm break-words whitespace-pre-wrap">{comment.text}</p>
         </div>
-        <div className="mt-0.5 flex gap-1">
+        <div className="mt-0.5 flex flex-wrap items-center gap-1">
           <Button variant="ghost" size="xs" onClick={() => onReply(comment)}>
             Reply
           </Button>
+          {author.id !== "me" && <ReportButton contentType="comment" contentId={comment.id} />}
           {author.id === "me" && (
             <Button
               variant="ghost"

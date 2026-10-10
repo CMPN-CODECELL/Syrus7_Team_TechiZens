@@ -4,6 +4,7 @@ import CommentSection from "@/components/CommentSection"
 import DeadlineLine from "@/components/DeadlineLine"
 import OrganizerLogo from "@/components/OrganizerLogo"
 import PersonLink from "@/components/PersonLink"
+import ReportButton from "@/components/ReportButton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -88,7 +89,7 @@ export default function ConnectionPost({
         )}
 
         {/* Like and comment */}
-        <div className="flex gap-1">
+        <div className="flex flex-wrap items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
@@ -109,6 +110,11 @@ export default function ConnectionPost({
             <MessageCircle />
             {post.commentCount}
           </Button>
+          {!isMine && (
+            <div className="ml-auto">
+              <ReportButton contentType="post" contentId={post.id} size="sm" />
+            </div>
+          )}
         </div>
 
         {showComments && (

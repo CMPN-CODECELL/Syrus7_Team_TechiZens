@@ -43,6 +43,9 @@ export default function SquadHubPage({ selectedId, onSelect, onOpen }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <h1 className="text-3xl font-semibold tracking-tight">Squad Hub</h1>
+      <p className="rounded-lg border bg-muted/50 p-3 text-xs text-muted-foreground">
+        Demo data: the students and squads here are invented, and their contact details are examples. Nobody real is contacted.
+      </p>
 
       {/* Where you already opted in */}
       {mine.length > 0 && (

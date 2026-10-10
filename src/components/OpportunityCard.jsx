@@ -49,7 +49,7 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
               <TriangleAlert data-icon="inline-start" /> Check details
             </Badge>
           ) : (
-            <Badge variant="secondary">
+            <Badge variant="secondary" title="All details are present and the sources agree. Not checked by a person.">
               <ShieldCheck data-icon="inline-start" /> Verified
             </Badge>
           )}

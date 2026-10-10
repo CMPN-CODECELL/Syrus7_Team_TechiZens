@@ -1,5 +1,7 @@
 import { useState } from "react"
 import { Check } from "lucide-react"
+import DeleteAccountCard from "@/components/DeleteAccountCard"
+import SchoolNotice from "@/components/SchoolNotice"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,6 +13,7 @@ import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
 import { ABOUT_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS, SKILL_SUGGESTIONS } from "@/data/constants"
+import { isSchoolStudent } from "@/lib/age"
 import { personInitials } from "@/lib/format"
 import { YEAR_OPTIONS, yearLabel } from "@/lib/scoring"
 
@@ -57,6 +60,8 @@ export default function ProfilePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {isSchoolStudent({ year: draft.year }) && <SchoolNotice />}
+
       {/* How you appear: the same layout as other students' profiles (shows your edits as you type) */}
       <Card>
         <CardContent className="flex items-start gap-4">
@@ -194,6 +199,8 @@ export default function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <DeleteAccountCard />
 
       {/* Stays at the bottom of the screen so Save is always in reach */}
       <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">

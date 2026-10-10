@@ -30,3 +30,6 @@ dist-ssr
 !.env.judges
 
 .vercel
+
+# Supabase CLI link state (local only)
+supabase/.temp

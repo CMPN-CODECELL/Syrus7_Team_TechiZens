@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import BeginnerToggle from "@/components/BeginnerToggle"
 import LocationPicker from "@/components/LocationPicker"
+import SchoolNotice from "@/components/SchoolNotice"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
 import { INTEREST_OPTIONS, SKILL_SUGGESTIONS } from "@/data/constants"
+import { isSchoolStudent } from "@/lib/age"
 import { YEAR_OPTIONS } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
 
@@ -39,6 +41,8 @@ export default function OnboardingPage() {
   const { user, updateProfile, completeOnboarding } = useUser()
   const { profile } = user
   const [step, setStep] = useState(0)
+  const [guardianOk, setGuardianOk] = useState(false) // school students confirm a parent or guardian agrees (not verified or stored)
+  const isSchool = isSchoolStudent(profile)
 
   const steps = [
     {
@@ -78,13 +82,28 @@ export default function OnboardingPage() {
     {
       title: "Where are you in your studies?",
       hint: "Some opportunities are restricted by year.",
-      canContinue: true,
+      canContinue: !isSchool || guardianOk,
       content: (
-        <ChoiceGrid
-          options={YEAR_OPTIONS}
-          value={profile.year}
-          onChange={(year) => updateProfile({ year })}
-        />
+        <div className="space-y-4">
+          <ChoiceGrid
+            options={YEAR_OPTIONS}
+            value={profile.year}
+            onChange={(year) => updateProfile({ year })}
+          />
+          {isSchool && (
+            <SchoolNotice>
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={guardianOk}
+                  onChange={(event) => setGuardianOk(event.target.checked)}
+                  className="mt-0.5 size-4"
+                />
+                <span>My parent or guardian has agreed that I can use Nexus.</span>
+              </label>
+            </SchoolNotice>
+          )}
+        </div>
       ),
     },
     {

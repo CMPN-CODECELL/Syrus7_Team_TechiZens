@@ -67,6 +67,9 @@ export default function ConnectionsPage({ onOpen, tab, onTabChange }) {
   return (
     <div className="mx-auto grid max-w-5xl grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <h1 className="sr-only">Connections</h1>
+      <p className="col-span-full rounded-lg border bg-muted/50 p-3 text-xs text-muted-foreground">
+        Demo data: the other students and their posts here are invented. Nothing you post is sent to real people.
+      </p>
 
       <Tabs value={tab} onValueChange={onTabChange} className="gap-4">
         <TabsList>

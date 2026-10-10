@@ -3,11 +3,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useSaved } from "@/context/saved-context"
 import { useUser } from "@/context/user-context"
+import { isSchoolStudent } from "@/lib/age"
 
+// `social` items are hidden for school students (under 18).
 const NAV_ITEMS = [
   { id: "discover", label: "Discover", icon: Compass },
-  { id: "connections", label: "Connections", icon: Network },
-  { id: "squads", label: "Squad Hub", icon: Users },
+  { id: "connections", label: "Connections", icon: Network, social: true },
+  { id: "squads", label: "Squad Hub", icon: Users, social: true },
   { id: "alerts", label: "Alerts", icon: Bell },
   { id: "profile", label: "Profile", icon: UserRound },
 ]
@@ -15,6 +17,7 @@ const NAV_ITEMS = [
 export default function Header({ page, onNavigate }) {
   const { user, signOut } = useUser()
   const { unreadCount } = useSaved()
+  const navItems = isSchoolStudent(user.profile) ? NAV_ITEMS.filter((item) => !item.social) : NAV_ITEMS
 
   // Small count bubble on the Alerts item.
   const badge = (id) =>
@@ -43,7 +46,7 @@ export default function Header({ page, onNavigate }) {
         </button>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <Button
               key={item.id}
               variant={page === item.id ? "secondary" : "ghost"}
@@ -69,8 +72,8 @@ export default function Header({ page, onNavigate }) {
     </header>
 
     {/* Mobile navigation: a tab bar fixed to the bottom, so all five pages fit without sideways scrolling */}
-    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-5 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-      {NAV_ITEMS.map((item) => (
+    <nav aria-label="Main" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }} className="fixed inset-x-0 bottom-0 z-20 grid border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      {navItems.map((item) => (
         <button
           key={item.id}
           type="button"
