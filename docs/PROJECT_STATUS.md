@@ -115,6 +115,8 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 
 - 2026-10-10: **Hack2skill source:** `scripts/ingest/sources/hack2skill.js` + `normalizeHack2skill.js`. Its pages are an empty shell, so it reads the public event list the site itself uses (`/api/v1/innovator/public/event/list`, 82 events, no login) and skips events its robots.txt disallows (13 of 82; read on each run). Only events with registration still open are kept (6 on 2026-10-10: Google/Hack2skill programs such as PromptWars and Build with AI). Registration end = deadline; no event dates, organizer logo or topic are given, so those are null. Category is guessed from the title.
 
+- 2026-10-10: **Ask AI is the only search** on Discover. The keyword filter that narrowed the feed as you typed was removed (product owner decision); the search bar now only sends the text to Ask AI (Enter or the button). Category cards, filters and sorting still narrow the feed.
+
 ## Remaining (frontend), in suggested order
 
 Squad Hub and the AI search are **done on the frontend** (see Done); what is left for them is backend work (see the backend list below).

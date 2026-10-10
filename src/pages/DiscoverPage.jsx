@@ -21,8 +21,8 @@ const PAGE_SIZE = 24 // cards shown at first; "Show more" adds this many
 
 // The long example does not fit on a phone, where it was cut off mid-word.
 const SEARCH_PLACEHOLDER = window.matchMedia("(max-width: 639px)").matches
-  ? "Search or ask AI"
-  : "Search, or ask: online coding workshops this weekend"
+  ? "Ask AI to find opportunities"
+  : "Ask AI: online coding workshops this weekend"
 
 export default function DiscoverPage({ onOpen }) {
   const { user } = useUser()
@@ -102,7 +102,6 @@ export default function DiscoverPage({ onOpen }) {
     setVisibleCount(PAGE_SIZE)
   }
 
-  const search = searchTerm.trim().toLowerCase()
   const byId = useMemo(() => Object.fromEntries((opportunities ?? []).map((o) => [o.id, o])), [opportunities])
 
   // Scoring is the slow part, so it only reruns when the listings or the profile change (not on every keystroke).
@@ -130,14 +129,6 @@ export default function DiscoverPage({ onOpen }) {
     .filter(({ opportunity }) => !category || opportunity.category === category)
     .filter(({ opportunity }) =>
       ALL_FILTERS.filter((f) => activeFilters.includes(f.id)).every((f) => f.test(opportunity, profile))
-    )
-    .filter(
-      ({ opportunity }) =>
-        !search ||
-        [opportunity.title, opportunity.organizer.name, ...opportunity.interests, ...opportunity.skills]
-          .join(" ")
-          .toLowerCase()
-          .includes(search)
     )
     .sort(SORTS.find((s) => s.id === sortId).compare)
 
@@ -210,18 +201,15 @@ export default function DiscoverPage({ onOpen }) {
           {opportunities === null ? "Finding opportunities for you..." : `${scored.length} open opportunities, ranked for you.`}
         </p>
 
-      {/* Typing searches by keyword. Enter or Ask AI reads it as a plain-English request. */}
+      {/* The only search: Enter or Ask AI reads the text as a plain-English request. Typing does not filter the feed. */}
       <form onSubmit={handleAsk} className="relative">
         <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           type="search"
           value={searchTerm}
-          onChange={(event) => {
-            setSearchTerm(event.target.value)
-            setVisibleCount(PAGE_SIZE)
-          }}
+          onChange={(event) => setSearchTerm(event.target.value)}
           placeholder={SEARCH_PLACEHOLDER}
-          aria-label="Search opportunities or ask the AI"
+          aria-label="Ask the AI to find opportunities"
           className="h-12 rounded-xl border-transparent bg-background pr-28 pl-9 text-base text-foreground shadow-sm"
         />
         <Button
@@ -333,12 +321,7 @@ export default function DiscoverPage({ onOpen }) {
               </>
             ) : (
               <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
-                <p>{search ? "No keyword matches." : "Nothing matches these filters."}</p>
-                {search && (
-                  <Button size="sm" variant="outline" onClick={handleAsk}>
-                    <Sparkles /> Ask AI instead
-                  </Button>
-                )}
+                <p>Nothing matches these filters.</p>
               </div>
             )}
           </>
