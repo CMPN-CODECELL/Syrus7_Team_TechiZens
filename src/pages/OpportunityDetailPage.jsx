@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { ArrowLeft, Bookmark, BookmarkCheck, CalendarX, CircleCheck, CircleX, ExternalLink, ShieldCheck, TriangleAlert, Users } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import OrganizerLogo from "@/components/OrganizerLogo"
+import SourceBadge from "@/components/SourceBadge"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -18,6 +19,7 @@ import {
   formatTeamSize,
 } from "@/lib/format"
 import { getMissingDetails, isClosed, needsCheck } from "@/lib/ingestion"
+import { sourceInfo } from "@/lib/sources"
 import { isSchoolStudent } from "@/lib/age"
 import { getEligibility, getRelevance } from "@/lib/scoring"
 import { cn } from "@/lib/utils"
@@ -201,7 +203,8 @@ export default function OpportunityDetailPage({ opportunityId, onBack }) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-muted-foreground underline-offset-4 hover:underline"
         >
-          Source <ExternalLink className="size-3.5" />
+          {sourceInfo(opportunity) ? <SourceBadge opportunity={opportunity} label="Source:" /> : "Source"}{" "}
+          <ExternalLink className="size-3.5" />
         </a>
       </div>
 

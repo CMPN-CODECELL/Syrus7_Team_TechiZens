@@ -70,7 +70,8 @@ If a shape needs to change, tell the other person first, because screens depend 
   interests, skills,         // lists of text
   teamSize,                  // { min, max } or null
   minYear,                   // number (see year above) or null
-  registrationUrl, sourceUrl,
+  registrationUrl, sourceUrl,  // web links (http/https) or null
+  source,                    // where it was collected from: "devpost" | "unstop" | null (see src/lib/sources.js)
   lastVerified,              // ISO date-time
   verified,                  // false = details missing or sources conflict
   warning,                   // text explaining why not verified, or null

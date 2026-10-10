@@ -69,6 +69,7 @@ export const LEGAL_PAGES = {
         heading: "Services we use",
         body: [
           "Supabase (database and sign-in), Google (sign-in) and Vercel (hosting). These providers process data for us and their servers may be outside India.",
+          "Google's favicon service also loads the small Devpost and Unstop icons shown on listings, so Google can see that your browser asked for them.",
           "Opportunity listings are collected from public sources. See Sources and attribution.",
         ],
       },
@@ -244,7 +245,7 @@ export const LEGAL_PAGES = {
       {
         heading: "Names and logos",
         body: [
-          "Organizer names and logos appear only to show who runs an opportunity. They are trademarks of their owners.",
+          "Organizer names and logos appear only to show who runs an opportunity, and the Devpost and Unstop icons only to show where a listing was collected from. They are trademarks of their owners.",
         ],
       },
       {

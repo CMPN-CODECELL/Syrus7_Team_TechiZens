@@ -134,7 +134,7 @@ Unstop  (public API)  ┘     (Node)         flag gaps     flag conflicts     (P
   The plan is an LLM behind a Supabase Edge Function; the API boundary is already in `src/api/search.js`.
 - **Squad Hub and Connections use invented students.** Nothing there touches real people.
 - **Sources are unofficial public endpoints** (Devpost's JSON, Unstop's public API) and can change. Only two sources so far.
-- **Not deployed yet**; it runs locally with the steps above.
+- It is live at the link at the top, and also runs locally with the steps above.
 - Google sign-in only works for accounts our OAuth setup allows. The demo login avoids this.
 
 ---

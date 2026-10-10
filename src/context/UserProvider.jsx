@@ -25,14 +25,17 @@ export function UserProvider({ children }) {
     // Listen for auth events (e.g. Google OAuth callback redirect, signout)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session) {
-        const current = await getCurrentUser()
-        if (isMounted) setUser(current)
-      } else if (event === "SIGNED_OUT") {
-        if (isMounted) setUser(null)
-      }
-      if (isMounted) setLoading(false)
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Supabase can hang if it is called again from inside this callback, so the work waits a tick.
+      setTimeout(async () => {
+        if (session) {
+          const current = await getCurrentUser()
+          if (isMounted) setUser(current)
+        } else if (event === "SIGNED_OUT") {
+          if (isMounted) setUser(null)
+        }
+        if (isMounted) setLoading(false)
+      }, 0)
     })
 
     return () => {

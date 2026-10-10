@@ -35,6 +35,7 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - **Official hackathon repo (`official`):** `https://github.com/CMPN-CODECELL/Syrus7_Team_TechiZens`. The organizers' email asks that all development ends up here ("migrate your codebase and commits"). All teammates were added as Maintain. The code and history were copied there (all branches up to commit `7eee8f4`).
 - The user chose **not** to make the official repo the default yet. Until they do, push to both after each piece of work: `git push origin main` and `git push official main`. To switch fully later: `git remote rename origin old-origin`, `git remote rename official origin`, `git push -u origin main`; the teammate then runs `git remote set-url origin <official url>`. Do this well before the submission deadline.
 - Nothing is pushed to either repo unless the user says so.
+- **Update 2026-10-10:** in the main working checkout `origin` is now the official CMPN-CODECELL repo (check with `git remote -v`). Check which repo Vercel is connected to before relying on auto-deploy.
 
 ## Where things stand (2026-10-09)
 

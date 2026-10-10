@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import OrganizerLogo from "@/components/OrganizerLogo"
+import SourceBadge from "@/components/SourceBadge"
 import { CATEGORIES } from "@/data/constants"
 import { formatDate } from "@/lib/format"
 import { needsCheck } from "@/lib/ingestion"
@@ -73,6 +74,7 @@ export default function OpportunityCard({ opportunity, relevance, reason, eligib
       <div className="space-y-0.5 px-5 pt-4 text-xs leading-4">
         <p className="line-clamp-2 text-muted-foreground">{reason}</p>
         {!eligibility.qualified && <p className="text-destructive">{eligibility.reason}</p>}
+        <SourceBadge opportunity={opportunity} className="pt-1 text-muted-foreground" />
       </div>
 
       {/* Eligibility status and action share one row */}

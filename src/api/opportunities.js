@@ -7,6 +7,7 @@
 // ============================================================================
 
 import { supabase } from "@/lib/supabase"
+import { safeHttpUrl } from "@/lib/url"
 
 const isConfigured = Boolean(
   import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -58,7 +59,7 @@ function toOpportunities(rows) {
     organizer: {
       name: organizerName(row),
       type: row.organizer?.type || "Platform",
-      website: row.organizer?.website || "",
+      website: safeHttpUrl(row.organizer?.website) || "",
       logo: row.organizer?.logo || null,
     },
     format: row.format !== null && row.format !== undefined && row.format !== "" ? row.format : null,
@@ -72,11 +73,9 @@ function toOpportunities(rows) {
     skills: row.skills || [],
     teamSize: row.team_size || null,
     minYear: row.min_year !== null && row.min_year !== undefined ? row.min_year : null,
-    registrationUrl:
-      row.registration_url !== null && row.registration_url !== undefined && row.registration_url !== ""
-        ? row.registration_url
-        : null,
-    sourceUrl: row.source_url || null,
+    registrationUrl: safeHttpUrl(row.registration_url),
+    sourceUrl: safeHttpUrl(row.source_url),
+    source: row.source || null, // "devpost" | "unstop" | ... (see src/lib/sources.js)
     lastVerified: row.last_verified,
     verified: Boolean(row.verified),
     warning: row.warning || null,

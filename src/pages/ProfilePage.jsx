@@ -134,10 +134,6 @@ export default function ProfilePage() {
               {draft.about.length}/{ABOUT_MAX_LENGTH}
             </p>
           </div>
-
-          <p className="text-xs text-muted-foreground">
-            Don't add phone numbers or emails. Contacts are shared only after both sides agree.
-          </p>
         </CardContent>
       </Card>
 
