@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Bell, BookmarkX } from "lucide-react"
+import { Bell, BookmarkX, Clock } from "lucide-react"
 import { getOpportunities } from "@/api/opportunities"
 import DeadlineLine from "@/components/DeadlineLine"
 import OrganizerLogo from "@/components/OrganizerLogo"
@@ -8,14 +8,15 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useSaved } from "@/context/saved-context"
-import { daysSince, formatDaysAgo } from "@/lib/format"
+import { daysSince, formatDate, formatDaysAgo } from "@/lib/format"
+import { reminderText } from "@/lib/reminders"
 import { cn } from "@/lib/utils"
 
 const FIELD_LABELS = { deadline: "Deadline", fee: "Fee", rules: "Rules" }
 
 // Two tabs: Alerts (what changed in saved opportunities) and Saved (the saved opportunities).
 export default function AlertsPage({ onOpen }) {
-  const { savedIds, alerts, unreadCount, toggleSave, markRead, markAllRead } = useSaved()
+  const { savedIds, alerts, reminders, unreadCount, toggleSave, markRead, markAllRead, markReminderRead } = useSaved()
   const [tab, setTab] = useState("alerts")
   const [opportunities, setOpportunities] = useState([])
   const [now] = useState(() => Date.now())
@@ -59,13 +60,53 @@ export default function AlertsPage({ onOpen }) {
 
         {/* Alerts */}
         <TabsContent value="alerts">
-          {alerts.length === 0 ? (
+          {alerts.length === 0 && reminders.length === 0 ? (
             <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
               <Bell className="size-5" />
-              <p>No alerts yet. Save an opportunity and we'll tell you when its deadline or rules change.</p>
+              <p>
+                No alerts yet. Save an opportunity and we'll remind you in the last week before its deadline, and tell
+                you when its deadline or rules change.
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
+              {/* Deadline reminders: saved opportunities that close within a week */}
+              {reminders.map((reminder) => {
+                const opportunity = byId[reminder.opportunityId]
+                if (!opportunity) return null
+                return (
+                  <Card key={reminder.key} size="sm" className={cn(!reminder.read && "ring-foreground/30")}>
+                    <CardContent className="space-y-2">
+                      <div className="flex items-start justify-between gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            markReminderRead(reminder.key)
+                            onOpen(opportunity.id)
+                          }}
+                          className="min-w-0 text-left text-sm font-medium hover:underline"
+                        >
+                          {!reminder.read && (
+                            <span className="mr-2 inline-block size-2 rounded-full bg-primary align-middle" aria-label="Unread" />
+                          )}
+                          {opportunity.title}
+                        </button>
+                        <Badge variant={reminder.daysLeft <= 1 ? "destructive" : "outline"} className="shrink-0">
+                          <Clock data-icon="inline-start" /> {reminderText(reminder.daysLeft)}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>Deadline reminder · {formatDate(reminder.deadline, { year: true })}</span>
+                        {!reminder.read && (
+                          <Button variant="ghost" size="xs" onClick={() => markReminderRead(reminder.key)}>
+                            Dismiss
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
               {alerts.map((alert) => {
                 const opportunity = byId[alert.opportunityId]
                 if (!opportunity) return null

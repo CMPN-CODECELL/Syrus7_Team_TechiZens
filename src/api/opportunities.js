@@ -37,7 +37,7 @@ async function fetchAllRows() {
 
 // Some scraped organizers have no real name ("n/a", "localhost-nyc"). Show the platform it came from instead.
 const JUNK_ORGANIZER = /^(n\/?a|none|null|undefined|unknown|tests?|localhost.*|[-.\s]*)$/i
-const PLATFORM_NAMES = { devpost: "Devpost", unstop: "Unstop" }
+const PLATFORM_NAMES = { devpost: "Devpost", unstop: "Unstop", hackerearth: "HackerEarth" }
 
 function organizerName(row) {
   const name = (row.organizer?.name ?? "").trim()
