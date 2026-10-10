@@ -5,6 +5,7 @@ export const SOURCES = {
   unstop: { name: "Unstop", domain: "unstop.com" },
   hackerearth: { name: "HackerEarth", domain: "hackerearth.com" },
   mlh: { name: "Major League Hacking", domain: "mlh.io" },
+  hack2skill: { name: "Hack2skill", domain: "hack2skill.com" },
 }
 
 // { name, domain, icon } for an opportunity's source, or null when it has none (or an unknown one).

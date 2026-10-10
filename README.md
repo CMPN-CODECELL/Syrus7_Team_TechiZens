@@ -82,7 +82,7 @@ appear after a listing actually changes, so right after setup the page can be em
 
 | POC feature | Status | Notes |
 |---|---|---|
-| **1. Smart ingestion** | **Real** | Devpost, Unstop, MLH and HackerEarth are fetched into Supabase: title, theme, dates, deadline, format, location, team size, link. Cross-posted duplicates are merged, expired events are shown as closed, missing details are `null` and flagged. |
+| **1. Smart ingestion** | **Real** | Devpost, Unstop, MLH, HackerEarth and Hack2skill are fetched into Supabase: title, theme, dates, deadline, format, location, team size, link. Cross-posted duplicates are merged, expired events are shown as closed, missing details are `null` and flagged. |
 | **2. Trust layer** | **Real** | Source link, Last verified time, warning banners for conflicts / missing details. |
 | **3. Decoupled scoring** | **Real** | Relevance (interests + skills, shown as %) and eligibility (Eligible / Not eligible with a reason) are separate. Scraped sources rarely state a minimum year, so "Not eligible" is uncommon in this data. |
 | **4. Discovery feed** | **Real** feed, **mock** AI | Ranked by skills and interests; three of the four POC filters plus extras (Free/Low-Cost was removed, see below). The conversational search is a rule-based reader, not an LLM yet. |
@@ -133,7 +133,7 @@ Unstop  (public API)  ┘     (Node)         flag gaps     flag conflicts     (P
 - **Conversational search is rule-based** (it understands topics, formats, types, dates and places, not free-form language).
   The plan is an LLM behind a Supabase Edge Function; the API boundary is already in `src/api/search.js`.
 - **Squad Hub and Connections use invented students.** Nothing there touches real people.
-- **Sources are unofficial public endpoints** (Devpost's JSON, Unstop's public API) and can change. Only four sources so far (HackerEarth currently lists only a handful of live challenges; MLH gives no registration deadline).
+- **Sources are unofficial public endpoints** (Devpost's JSON, Unstop's public API) and can change. Five sources so far (HackerEarth and Hack2skill currently list only a handful of open events; MLH gives no registration deadline; Hack2skill gives no event dates, so its registration end is the deadline).
 - It is live at the link at the top, and also runs locally with the steps above.
 - Google sign-in only works for accounts our OAuth setup allows. The demo login avoids this.
 

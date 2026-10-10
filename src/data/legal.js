@@ -69,7 +69,7 @@ export const LEGAL_PAGES = {
         heading: "Services we use",
         body: [
           "Supabase (database and sign-in), Google (sign-in) and Vercel (hosting). These providers process data for us and their servers may be outside India.",
-          "Google's favicon service also loads the small Devpost, Unstop, HackerEarth and MLH icons shown on listings, so Google can see that your browser asked for them.",
+          "Google's favicon service also loads the small Devpost, Unstop, HackerEarth, MLH and Hack2skill icons shown on listings, so Google can see that your browser asked for them.",
           "Opportunity listings are collected from public sources. See Sources and attribution.",
         ],
       },
@@ -209,6 +209,7 @@ export const LEGAL_PAGES = {
               "Unstop: hackathons, competitions, quizzes, workshops and internships, read from Unstop's public search API.",
               "HackerEarth: current hackathons and coding challenges (hiring challenges are left out), read from the public list that hackerearth.com/challenges uses. HackerEarth does not state the format, so its challenges are shown as online.",
               "Major League Hacking (MLH): upcoming student hackathons from its season schedule. MLH lists event dates but no registration deadline, so the deadline is shown as not listed.",
+              "Hack2skill: open hackathons, bootcamps and challenges, read from the public event list that hack2skill.com uses, leaving out events its robots.txt disallows. The list gives the registration window but not the event dates, so the registration end is shown as the deadline.",
             ],
           },
           "Every listing links back to its source and to the organizer's registration page. Nexus is not affiliated with or endorsed by Devpost, Unstop or any organizer.",
@@ -247,7 +248,7 @@ export const LEGAL_PAGES = {
       {
         heading: "Names and logos",
         body: [
-          "Organizer names and logos appear only to show who runs an opportunity, and the Devpost, Unstop, HackerEarth and MLH icons only to show where a listing was collected from. They are trademarks of their owners.",
+          "Organizer names and logos appear only to show who runs an opportunity, and the Devpost, Unstop, HackerEarth, MLH and Hack2skill icons only to show where a listing was collected from. They are trademarks of their owners.",
         ],
       },
       {

@@ -76,7 +76,7 @@ const GENERIC_THEMES = new Set(["Beginner Friendly", "Open Ended"])
 
 export function guessOrganizerType(name) {
   if (/univers|college|institute|school|polytechnic|academy|\biit\b|\bnit\b/i.test(name)) return "College"
-  if (/devpost|\bmlh\b|major league hacking|hackerearth|unstop|devfolio/i.test(name)) return "Platform"
+  if (/devpost|\bmlh\b|major league hacking|hackerearth|hack2skill|unstop|devfolio/i.test(name)) return "Platform"
   return "Company"
 }
 

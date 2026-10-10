@@ -69,3 +69,5 @@ GitHub pauses them after 60 days without repository activity.
 Write `sources/<name>.js` (fetch) and a normalize function that returns `{ opportunity, organizer }`, then add it to
 `SOURCES` in `index.js`. Use an id prefix like `unstop-<id>` so rows never collide. Duplicates across sources are merged
 by `dedupe.js`.
+
+- Hack2skill: `sources/hack2skill.js` + `normalizeHack2skill.js` read its public event list and respect its robots.txt (registration end = deadline; no event dates).

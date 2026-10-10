@@ -15,10 +15,12 @@ import { fetchDevpost } from "./sources/devpost.js"
 import { fetchUnstop } from "./sources/unstop.js"
 import { fetchHackerEarth } from "./sources/hackerearth.js"
 import { fetchMlh } from "./sources/mlh.js"
+import { fetchHack2skill } from "./sources/hack2skill.js"
 import { normalizeDevpost, findMissingDetails } from "./normalize.js"
 import { normalizeUnstop } from "./normalizeUnstop.js"
 import { normalizeHackerEarth } from "./normalizeHackerEarth.js"
 import { normalizeMlh } from "./normalizeMlh.js"
+import { normalizeHack2skill } from "./normalizeHack2skill.js"
 import { mergeDuplicates } from "./dedupe.js"
 import { saveAll } from "./save.js"
 
@@ -42,6 +44,7 @@ const SOURCES = [
   { name: "Unstop", fetch: fetchUnstop, normalize: normalizeUnstop },
   { name: "HackerEarth", fetch: fetchHackerEarth, normalize: normalizeHackerEarth },
   { name: "MLH", fetch: fetchMlh, normalize: normalizeMlh },
+  { name: "Hack2skill", fetch: fetchHack2skill, normalize: normalizeHack2skill },
 ]
 
 async function main() {
