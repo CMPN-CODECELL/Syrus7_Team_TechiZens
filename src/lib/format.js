@@ -1,5 +1,7 @@
 // Small helpers for showing dates and counts as text.
 
+import { yearLabel } from "@/lib/scoring"
+
 const SHORT = { day: "numeric", month: "short" }
 const LONG = { day: "numeric", month: "short", year: "numeric" }
 
@@ -54,4 +56,9 @@ export function personInitials(name) {
     .join("")
     .slice(0, 2)
     .toUpperCase()
+}
+
+// "BITS Pilani · 2nd year". Profiles may have no college yet, so empty parts are left out.
+export function personDetails(person) {
+  return [person.college, yearLabel(person.year)].filter(Boolean).join(" · ")
 }

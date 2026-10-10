@@ -90,7 +90,7 @@ expired events. Closed ones stay out of the Discover feed and the Squad Hub list
 posts and profiles, with a disabled Apply button. The real AI search (`searchWithAI`) should leave closed events out too.
 Merging cross-posted duplicates is a backend job; the frontend just shows one record.
 
-**Squad Hub** (`src/api/squads.js`; examples in `src/data/mockSquads.js`). The full shapes are written at the top of that file.
+**Squad Hub** (`src/api/squads.js`, on Supabase). The full shapes are written at the top of that file.
 
 ```js
 // The student opts in per opportunity. role = "leader" | "seeker" | "connect". hoursPerWeek is 3, 6, 10, 15 or 20 (null for connect).
@@ -106,10 +106,10 @@ sendRequest(opportunityId, targetId)       // leader invites a candidate; seeker
 withdrawRequest(opportunityId, targetId)
 ```
 
-`status` is `"none" | "pending" | "mutual"`. **Double opt-in is the privacy rule:** `contact` must be `null` until the status is
+`status` is `"none" | "pending" | "incoming" | "mutual"` (`incoming` = the other student asked you; the item has a `requestId` to accept or decline). **Double opt-in is the privacy rule:** `contact` must be `null` until the status is
 `"mutual"` (both students agreed), and only the people who agreed with the student get a contact. A seeker can only have one
 open request per opportunity. `capacity` is the opportunity's maximum team size. Return raw data: the screen does the ranking
-(skill fit and schedule fit, in `src/lib/squadMatching.js`). The mock makes the other student "agree" 4 seconds after being asked
+(skill fit and schedule fit, in `src/lib/squadMatching.js`). The other student agrees whenever they choose (live updates push it)
 (except a few who never answer); a real backend should let the other student answer whenever they choose, ideally with a realtime listener.
 Suggested tables: `squad_optins`, `squads` and `squad_members`, `squad_requests`, with Row Level Security.
 
@@ -160,7 +160,7 @@ Suggested table: `saved_opportunities (user_id, opportunity_id)` with Row Level 
 `markAlertRead(alertId)` and `markAllAlertsRead()` return nothing.
 Real change detection (and an optional realtime listener) is backend work.
 
-**Connection post** (each item returned by `getConnectionPosts` in `src/api/connections.js`; examples in `src/data/mockConnectionPosts.js`)
+**Connection post** (each item returned by `getConnectionPosts` in `src/api/connections.js`)
 
 ```js
 {
@@ -176,11 +176,11 @@ Real change detection (and an optional realtime listener) is backend work.
 }
 ```
 
-`author.college` can be `null` (profiles have no college field yet). In the mock the logged-in student's author id is `"me"`;
+`author.college` can be `null` (the student has not filled it in). The logged-in student's author id is always `"me"`;
 with a real backend, the screens need to know which posts and comments are the logged-in student's own (to show Delete),
 so either keep returning a stable marker or tell the frontend dev what to compare against.
 
-**Comment** (each item returned by `getComments`; examples in `src/data/mockComments.js`)
+**Comment** (each item returned by `getComments`)
 
 ```js
 {
@@ -212,7 +212,7 @@ Limits used by the screens: post text up to 500 characters, comment text up to 3
 Suggested tables: `connections (user_id, connected_user_id)`, `posts`, `post_likes`, `comments`, all with Row Level Security
 (read posts from connections and yourself; delete only your own).
 
-**People and connection requests** (`src/api/people.js`; examples in `src/data/mockPeople.js`)
+**People and connection requests** (`src/api/people.js`, on Supabase; `getNetwork()` returns connections, invitations, sent requests and suggestions in one call)
 
 ```js
 // Person (never include contact details)
@@ -265,7 +265,7 @@ The student's own profile is the existing Profile page. It now has an editable `
 so the real backend should store them with the rest of the profile and return them from `getCurrentUser`. Other students
 see them through `getPerson`. A profile saved before these fields existed may not have them: treat a missing value as `""`.
 
-A request becomes a connection only when the OTHER student accepts it (backend work; in the mock, sent requests just stay pending).
+A request becomes a connection only when the OTHER student accepts it (a database rule).
 Connecting does NOT share contact details. Those only come after double opt-in in the Squad Hub.
 `getConnectionPosts()` must only return posts from the student's connections and the student's own.
 Suggested table: `connections (user_id, other_user_id, status)` with status `pending` or `accepted`, with Row Level Security.

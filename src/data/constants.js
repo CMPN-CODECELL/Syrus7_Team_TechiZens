@@ -81,11 +81,13 @@ export const SKILL_SUGGESTIONS = [...new Set([...COMMON_SKILLS, ...MORE_SKILLS])
 // What a brand-new student's profile looks like before onboarding.
 // Limits for the text fields (the screens enforce them; enforce them on the server too).
 export const HEADLINE_MAX_LENGTH = 100
+export const COLLEGE_MAX_LENGTH = 80
 export const ABOUT_MAX_LENGTH = 300
 
 export const EMPTY_PROFILE = {
   headline: "", // one line shown under your name, e.g. "Second-year student exploring web development"
   about: "", // a short paragraph about yourself
+  college: "", // shown to other students next to your year (optional)
   skills: [],
   interests: [],
   isBeginner: false,

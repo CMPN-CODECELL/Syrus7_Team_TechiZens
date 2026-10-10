@@ -9,6 +9,7 @@ export const MAX_SHOWN = 5 // leaders see up to 5 candidates, seekers see the to
 
 const SKILL_WEIGHT = 0.6
 const SCHEDULE_WEIGHT = 0.4
+const NO_SKILLS_FIT = 0.5 // when nothing is said about skills, neither a match nor a miss
 
 // 1 when both have the same weekly hours, lower the further apart they are.
 export function scheduleFit(hoursA, hoursB) {
@@ -34,10 +35,11 @@ export function rankCandidates(candidates, opportunity, profile, myHours, limit 
   return candidates
     .map((candidate) => {
       const covers = overlap(wanted, candidate.person.skills)
-      const skillFit = wanted.length > 0 ? covers.length / wanted.length : 0
+      // An opportunity that names no skills is neutral (half marks), not a miss.
+      const skillFit = wanted.length > 0 ? covers.length / wanted.length : NO_SKILLS_FIT
       const schedule = scheduleFit(candidate.hoursPerWeek, myHours)
       const parts = [
-        covers.length > 0 ? `Covers ${covers.join(", ")}` : "No matching skills yet",
+        covers.length > 0 ? `Covers ${covers.join(", ")}` : wanted.length === 0 ? "No specific skills needed" : "No matching skills yet",
         describeSchedule(candidate.hoursPerWeek, myHours),
       ]
       return { ...candidate, score: toScore(skillFit, schedule), reason: parts.join(" · ") }
@@ -55,10 +57,14 @@ export function rankSquads(squads, profile, myHours, limit = MAX_SHOWN) {
     .filter((squad) => squad.status === "mutual" || squad.members.length < squad.capacity)
     .map((squad) => {
       const mine = overlap(squad.lookingForSkills, profile.skills)
-      const skillFit = squad.lookingForSkills.length > 0 ? mine.length / squad.lookingForSkills.length : 0
+      const skillFit = squad.lookingForSkills.length > 0 ? mine.length / squad.lookingForSkills.length : NO_SKILLS_FIT
       const schedule = scheduleFit(squad.hoursPerWeek, myHours)
       const parts = [
-        mine.length > 0 ? `You have ${mine.join(", ")}` : "Needs skills you don't list yet",
+        mine.length > 0
+          ? `You have ${mine.join(", ")}`
+          : squad.lookingForSkills.length === 0
+            ? "No specific skills asked for"
+            : "Needs skills you don't list yet",
         describeSchedule(squad.hoursPerWeek, myHours),
       ]
       return { ...squad, score: toScore(skillFit, schedule), reason: parts.join(" · ") }

@@ -3,8 +3,7 @@ import { getConnections } from "@/api/people"
 import PersonLink from "@/components/PersonLink"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { personInitials } from "@/lib/format"
-import { yearLabel } from "@/lib/scoring"
+import { personDetails, personInitials } from "@/lib/format"
 
 const SHOWN = 8
 
@@ -14,7 +13,9 @@ export default function ConnectionsPreview() {
   const [connections, setConnections] = useState(null) // null = still loading
 
   useEffect(() => {
-    getConnections().then(setConnections)
+    getConnections()
+      .then(setConnections)
+      .catch(() => setConnections([]))
   }, [])
 
   return (
@@ -43,7 +44,7 @@ export default function ConnectionsPreview() {
                     {person.name}
                   </PersonLink>
                   <p className="truncate text-xs text-muted-foreground">
-                    {[person.college, yearLabel(person.year)].filter(Boolean).join(" · ")}
+                    {personDetails(person)}
                   </p>
                 </div>
               </li>

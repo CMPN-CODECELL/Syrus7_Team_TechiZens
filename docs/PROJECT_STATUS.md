@@ -52,9 +52,9 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 | `api/opportunities.js` | the list of opportunities | **Real (Supabase)**; an empty list if the call fails (no mock fallback) | none |
 | `api/saved.js` | saved opportunities | **Real (Supabase `saved_opportunities`)** when signed in; localStorage in demo mode | none |
 | `api/alerts.js` | Change Sentinel alerts | **Real (Supabase `my_alerts` view, `alert_reads`)**; a database trigger writes alerts when ingestion changes a deadline or fee | none |
-| `api/connections.js` | feed posts, likes, comments | Mock; `feed_posts`, `post_comments` ready | `data/mockConnectionPosts.js`, `data/mockComments.js` |
-| `api/people.js` | connections, profiles of others, suggestions, invitations | Mock; `connections`, `public_profiles` ready | `data/mockPeople.js` |
-| `api/squads.js` | Squad Hub opt-ins, matches, teams, requests | Mock; squad tables and `get_contact` ready. Demo people are generated for any opportunity | `data/mockSquads.js` |
+| `api/connections.js` | feed posts, likes, comments | **Real (Supabase)** since 2026-10-10: `feed_posts`, `post_comments`, live updates | none |
+| `api/people.js` | connections, profiles of others, suggestions, invitations, sent requests | **Real (Supabase)** since 2026-10-10: `connections`, `public_profiles`, live updates | none |
+| `api/squads.js` | Squad Hub opt-ins, matches, teams, requests | **Real (Supabase)** since 2026-10-10: squad tables, `respond_to_squad_request`, `get_contact`, live updates | none |
 | `api/search.js` | conversational AI search | Mock; needs an LLM Edge Function (not SQL) | `lib/mockSearchParser.js` |
 
 **What is still not real vs the POC** (details in the audit): ingestion exists only for Devpost (`scripts/ingest/`, run by hand, no schedule yet); other data is hand-seeded, AI search is rule-based, Squad Hub / Connections / saved / alerts are browser-only until rewired, no realtime subscriptions in the screens, profile has no college field. Suggested order: rewire `saved.js` + `alerts.js`, then Connections and people, then Squad Hub, then an LLM Edge Function for search, then a small ingestion job.
@@ -109,6 +109,9 @@ SQL rules: [supabase/README.md](../supabase/README.md).
 - **UI refresh (2026-10-10):** indigo/violet palette in the design tokens (`src/index.css`, light and dark), rounder corners, layered card shadows (a `[data-slot="card"]` rule, so the generated `ui/` files are untouched), a soft colour glow behind the page, a gradient hero with the search on Discover, icon chips on the category cards and a hover lift on opportunity cards. Do not add `background-attachment: fixed` to the page background: it made scrolling slow to paint.
 
 - 2026-10-10: Relevance refined (`src/lib/scoring.js`): matching more than two interests now adds a little (up to 5), and a long description (150+ characters, in practice Unstop) is read for topics when the title, theme and listed interests give none. Best match now lists eligible opportunities before ineligible ones.
+
+- 2026-10-10: **All mock social data removed.** Connections, the feed, people and the Squad Hub now run on Supabase only (`api/people.js`, `api/connections.js`, `api/squads.js`, shared helpers in `api/shared.js`, live updates in `api/realtime.js`). The four `src/data/mock*.js` social files are deleted. Migration `0021_remove_demo_data.sql` deletes the 16 demo students and the seed/auto-answer triggers, and hides students in school (year <= 0) from `public_profiles`. The local demo login (`VITE_DEMO_LOGIN`) has no database account, so social pages show empty lists and a note there.
+- 2026-10-10: **Connections page improved:** tabs Feed / Connections / Find people (search students, "shared interests or skills" filter); invitations and sent requests (with Withdraw) in the Connections tab, with a count badge; post types (Update, Recommend, Looking for teammates); live updates; clear empty states; a College field in Profile > Public profile. Squad Hub got an Accept / Decline step for requests sent to you, and squads now list the skills the leader lacks.
 
 ## Remaining (frontend), in suggested order
 

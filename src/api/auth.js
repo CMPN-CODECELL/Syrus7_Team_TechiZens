@@ -5,8 +5,8 @@
 // Preserves the User data shape documented in CONTRIBUTING.md.
 //
 // A "user" looks like:
-//   { name, email, onboarded: boolean, profile: { headline, about, skills, interests, isBeginner, year, location } }
-// (older saved users may not have headline / about yet; treat them as empty text)
+//   { name, email, onboarded: boolean, profile: { headline, about, college, skills, interests, isBeginner, year, location } }
+// (older saved users may not have headline / about / college yet; treat them as empty text)
 // ============================================================================
 
 import { EMPTY_PROFILE } from "@/data/constants"
@@ -37,6 +37,7 @@ function formatUser(profileRow, authUser) {
   const profile = {
     headline: profileRow?.headline ?? EMPTY_PROFILE.headline ?? "",
     about: profileRow?.about ?? EMPTY_PROFILE.about ?? "",
+    college: profileRow?.college ?? EMPTY_PROFILE.college ?? "",
     skills: profileRow?.skills ?? EMPTY_PROFILE.skills,
     interests: profileRow?.interests ?? EMPTY_PROFILE.interests,
     isBeginner: profileRow?.is_beginner ?? EMPTY_PROFILE.isBeginner,
@@ -185,6 +186,7 @@ export async function saveUser(user) {
       onboarded: Boolean(user.onboarded),
       headline: user.profile?.headline || "",
       about: user.profile?.about || "",
+      college: user.profile?.college || null,
       skills: user.profile?.skills || [],
       interests: user.profile?.interests || [],
       is_beginner: Boolean(user.profile?.isBeginner),

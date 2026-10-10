@@ -16,7 +16,7 @@ import BeginnerToggle from "@/components/BeginnerToggle"
 import LocationPicker from "@/components/LocationPicker"
 import TagPicker from "@/components/TagPicker"
 import { useUser } from "@/context/user-context"
-import { ABOUT_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS, SKILL_SUGGESTIONS } from "@/data/constants"
+import { ABOUT_MAX_LENGTH, COLLEGE_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS, SKILL_SUGGESTIONS } from "@/data/constants"
 import { isSchoolStudent } from "@/lib/age"
 import { personInitials } from "@/lib/format"
 import { cityOf } from "@/lib/location"
@@ -31,6 +31,7 @@ function snapshotOf(user) {
     name: user.name,
     headline: profile.headline ?? "",
     about: profile.about ?? "",
+    college: profile.college ?? "",
     interests: profile.interests,
     skills: profile.skills,
     isBeginner: profile.isBeginner,
@@ -225,6 +226,17 @@ export default function ProfilePage() {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="college">College</Label>
+                <Input
+                  id="college"
+                  value={draft.college}
+                  maxLength={COLLEGE_MAX_LENGTH}
+                  placeholder="e.g. BITS Pilani"
+                  onChange={(event) => change({ college: event.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="about">About</Label>
                 <Textarea
                   id="about"
@@ -256,7 +268,7 @@ export default function ProfilePage() {
                   <p className="text-lg font-semibold break-words">{draft.name.trim() || "Your name"}</p>
                   <p className="text-sm break-words">{draft.headline || <span className="text-muted-foreground">No headline yet</span>}</p>
                   <p className="text-sm text-muted-foreground">
-                    {[yearLabel(draft.year), cityOf(draft.location)].filter(Boolean).join(" · ")}
+                    {[draft.college.trim(), yearLabel(draft.year), cityOf(draft.location)].filter(Boolean).join(" · ")}
                   </p>
                 </div>
               </div>

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react"
-import { getMatches, getTeam, optIn, optOut, sendRequest, withdrawRequest } from "@/api/squads"
+import { useEffect, useState } from "react"
+import { subscribeToChanges } from "@/api/realtime"
+import { getMatches, getTeam, optIn, optOut, respondToRequest, sendRequest, withdrawRequest } from "@/api/squads"
 import SquadCard from "@/components/SquadCard"
 import SquadMatchRow from "@/components/SquadMatchRow"
 import SquadOptIn from "@/components/SquadOptIn"
@@ -10,10 +11,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useUser } from "@/context/user-context"
 import { formatTeamSize } from "@/lib/format"
 import { MAX_SHOWN, rankAttendees, rankCandidates, rankSquads } from "@/lib/squadMatching"
-
-// In the demo the other student agrees a few seconds after being asked, so look again then.
-// A real backend would push the change instead (realtime listener).
-const DEMO_RECHECK_MS = 4500
 
 const ROLE_LABELS = { leader: "Leading a team", seeker: "Looking for a team", connect: "Connecting" }
 
@@ -40,17 +37,25 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
   const { user } = useUser()
   const { profile } = user
   const [data, setData] = useState(null) // null = still loading
-  const timer = useRef(null)
+  const [error, setError] = useState("")
   const isTeam = opportunity.teamSize !== null
 
   useEffect(() => {
     let cancelled = false
-    fetchPanel(opportunity.id).then((result) => {
-      if (!cancelled) setData(result)
-    })
+    const load = () =>
+      fetchPanel(opportunity.id)
+        .then((result) => {
+          if (!cancelled) setData(result)
+        })
+        .catch(() => {
+          if (!cancelled) setError("Could not load this. Please try again.")
+        })
+    load()
+    // Live updates: someone opts in, asks you, or answers your request.
+    const stop = subscribeToChanges(["squad_optins", "squad_requests", "squad_members", "squads"], load)
     return () => {
       cancelled = true
-      clearTimeout(timer.current)
+      stop()
     }
   }, [opportunity.id])
 
@@ -58,30 +63,32 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
     setData(await fetchPanel(opportunity.id))
   }
 
+  // Runs an action, then reloads. A failure (for example "This squad is already full") is shown to the student.
+  async function run(action) {
+    setError("")
+    try {
+      await action()
+      await refresh()
+    } catch (failure) {
+      setError(failure.message || "Something went wrong. Please try again.")
+      await refresh().catch(() => {})
+    }
+  }
+
   async function handleOptIn(role, hoursPerWeek) {
-    await optIn({ opportunityId: opportunity.id, role, hoursPerWeek })
-    await refresh()
+    await run(() => optIn({ opportunityId: opportunity.id, role, hoursPerWeek }))
     onChange()
   }
 
   async function handleOptOut() {
-    await optOut(opportunity.id)
-    clearTimeout(timer.current)
-    await refresh()
+    await run(() => optOut(opportunity.id))
     onChange()
   }
 
-  async function handleSend(targetId) {
-    await sendRequest(opportunity.id, targetId)
-    await refresh()
-    clearTimeout(timer.current)
-    timer.current = setTimeout(refresh, DEMO_RECHECK_MS)
-  }
-
-  async function handleWithdraw(targetId) {
-    await withdrawRequest(opportunity.id, targetId)
-    await refresh()
-  }
+  const handleSend = (targetId) => run(() => sendRequest(opportunity.id, targetId))
+  const handleWithdraw = (targetId) => run(() => withdrawRequest(opportunity.id, targetId))
+  const handleAccept = (requestId) => run(() => respondToRequest(requestId, true))
+  const handleDecline = (requestId) => run(() => respondToRequest(requestId, false))
 
   const { matches, team } = data ?? {}
 
@@ -102,8 +109,14 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
         </CardContent>
       </Card>
 
+      {error && (
+        <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+
       {data === null ? (
-        <p className="p-6 text-center text-sm text-muted-foreground">Loading...</p>
+        <p className="p-6 text-center text-sm text-muted-foreground">{error ? "" : "Loading..."}</p>
       ) : !matches ? (
         <SquadOptIn isTeam={isTeam} onSubmit={handleOptIn} />
       ) : (
@@ -128,7 +141,7 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
               </SectionTitle>
               {matches.candidates.length === 0 ? (
                 <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  No one has opted in for this yet.
+                  No one has opted in for this yet. Students who look for a team for this opportunity will show up here.
                 </p>
               ) : (
                 topWithActive(rankCandidates(matches.candidates, opportunity, profile, matches.hoursPerWeek, Infinity)).map((item) => (
@@ -140,6 +153,8 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
                     disabled={team?.full}
                     onSend={handleSend}
                     onWithdraw={handleWithdraw}
+                    onAccept={handleAccept}
+                    onDecline={handleDecline}
                   />
                 ))
               )}
@@ -153,7 +168,7 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
               <SectionTitle note="Ranked by skill fit and schedule fit.">Best-fit squads</SectionTitle>
               {matches.squads.length === 0 ? (
                 <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  No squads for this yet.
+                  No squads for this yet. Squads appear when a student opts in as a leader.
                 </p>
               ) : (
                 topWithActive(rankSquads(matches.squads, profile, matches.hoursPerWeek, Infinity)).map((squad) => (
@@ -161,9 +176,13 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
                     key={squad.id}
                     squad={squad}
                     mySkills={profile.skills}
-                    disabled={matches.squads.some((other) => other.status !== "none" && other.id !== squad.id)}
+                    disabled={matches.squads.some(
+                      (other) => (other.status === "pending" || other.status === "mutual") && other.id !== squad.id
+                    )}
                     onSend={handleSend}
                     onWithdraw={handleWithdraw}
+                    onAccept={handleAccept}
+                    onDecline={handleDecline}
                   />
                 ))
               )}
@@ -176,7 +195,7 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
               <SectionTitle note="People who share your interests and skills.">People to connect with</SectionTitle>
               {matches.attendees.length === 0 ? (
                 <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-                  No one has opted in for this yet.
+                  No one else has opted in to connect for this yet.
                 </p>
               ) : (
                 topWithActive(rankAttendees(matches.attendees, profile, Infinity)).map((item) => (
@@ -187,6 +206,8 @@ export default function SquadPanel({ opportunity, onOpen, onChange }) {
                     doneLabel="Connected"
                     onSend={handleSend}
                     onWithdraw={handleWithdraw}
+                    onAccept={handleAccept}
+                    onDecline={handleDecline}
                   />
                 ))
               )}

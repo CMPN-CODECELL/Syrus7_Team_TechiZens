@@ -1,15 +1,13 @@
 // ============================================================================
-// SWAP POINT: Connections feed (owner: backend / Supabase teammate)
+// Connections feed (Supabase: posts, post_likes, comments and the views feed_posts / post_comments, see 0010).
 //
-// A LinkedIn-style feed: posts from the students the logged-in student is connected to
-// (and their own), with likes, comments and replies.
-// Right now this is fake: seed data from src/data/mockConnectionPosts.js and
-// src/data/mockComments.js, and anything the student creates is kept in localStorage.
-// To go live, replace each body with Supabase (connections, posts, post_likes and comments
-// tables, all with Row Level Security). Keep names, inputs and returned shapes.
+// A LinkedIn-style feed: posts from the students the signed-in student is connected to (and their own),
+// with likes, comments and replies. Row Level Security decides who sees what: a student only ever receives
+// posts and comments of their connections and themself.
+// Without a real sign-in (the local demo login) the feed is empty and actions throw.
 //
-// Author:   { id, name, college, year }   college can be null (profiles have no college yet).
-//           year = same numbers as the profile (-2 .. 5). The logged-in student's id is "me" in the mock.
+// Author:   { id, name, college, year }   college can be null. year = same numbers as the profile (-2 .. 5).
+//           The signed-in student's id is "me".
 // Post:     { id, author, type, text, opportunityId, createdAt, likeCount, likedByMe, commentCount }
 //           type: "saved" | "recommended" | "looking_for_team" | "update"
 // Comment:  { id, postId, parentId, author, text, createdAt }
@@ -18,147 +16,125 @@
 // Never include contact details in any of these. Contacts are only shared after double opt-in.
 // ============================================================================
 
-import { getCurrentUser } from "@/api/auth"
-import { getOpportunities } from "@/api/opportunities"
-import { getConnectedIds } from "@/api/people"
-import { mockComments } from "@/data/mockComments"
-import { mockConnectionPosts } from "@/data/mockConnectionPosts"
-import { mockPeople } from "@/data/mockPeople"
-import { isClosed } from "@/lib/ingestion"
-import { getTopics, overlap } from "@/lib/scoring"
+import { getUserId, requireUserId, screenId, unwrap } from "@/api/shared"
+import { supabase } from "@/lib/supabase"
 
-const KEYS = {
-  liked: "nexus-liked-posts",
-  myPosts: "nexus-my-posts",
-  myComments: "nexus-my-comments",
+const FEED_LIMIT = 100
+const POST_TYPES = ["update", "recommended", "looking_for_team"] // what a student can write (the others are for later)
+
+const POST_COLUMNS =
+  "id, type, text, opportunity_id, created_at, author_id, author_name, author_college, author_year, like_count, liked_by_me, comment_count"
+const COMMENT_COLUMNS = "id, post_id, parent_id, text, created_at, author_id, author_name, author_college, author_year"
+
+function toAuthor(row, myId) {
+  return { id: screenId(row.author_id, myId), name: row.author_name || "Student", college: row.author_college || null, year: row.author_year }
 }
 
-function read(key) {
-  try {
-    return JSON.parse(localStorage.getItem(key)) ?? []
-  } catch {
-    return []
+function toPost(row, myId) {
+  return {
+    id: row.id,
+    author: toAuthor(row, myId),
+    type: row.type,
+    text: row.text ?? "",
+    opportunityId: row.opportunity_id,
+    createdAt: row.created_at,
+    likeCount: row.like_count,
+    likedByMe: row.liked_by_me,
+    commentCount: row.comment_count,
   }
 }
 
-function write(key, value) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // Storage unavailable: changes only last for this session.
+function toComment(row, myId) {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    parentId: row.parent_id,
+    author: toAuthor(row, myId),
+    text: row.text,
+    createdAt: row.created_at,
   }
-}
-
-// The logged-in student as an author. (Mock: id is always "me".)
-async function currentAuthor() {
-  const user = await getCurrentUser()
-  return { id: "me", name: user?.name ?? "You", college: null, year: user?.profile?.year ?? 2 }
-}
-
-function newId(prefix) {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`
 }
 
 // ---- Posts -----------------------------------------------------------------
 
-// Demo only: the invented posts were written for opportunities that no longer exist. Each one is pointed at a
-// real, open opportunity that fits the author's interests (team posts prefer a team event), the same one every time.
-function hashOf(text) {
-  let hash = 0
-  for (const character of text) hash = (hash * 31 + character.charCodeAt(0)) >>> 0
-  return hash
-}
-
-function withRealOpportunity(post, opportunities) {
-  if (!post.opportunityId || opportunities.some((o) => o.id === post.opportunityId)) return post
-  const author = mockPeople.find((person) => person.id === post.author.id)
-  const open = opportunities.filter((o) => !isClosed(o))
-  const teamOnly = post.type === "looking_for_team" ? open.filter((o) => o.teamSize) : []
-  const pool = teamOnly.length > 0 ? teamOnly : open
-  if (pool.length === 0) return { ...post, opportunityId: null }
-  const best = pool
-    .map((o) => ({ o, fit: overlap(author?.interests ?? [], getTopics(o)).length, tiebreak: hashOf(post.id + o.id) }))
-    .sort((a, b) => b.fit - a.fit || a.tiebreak - b.tiebreak)[0]
-  return { ...post, opportunityId: best.o.id }
-}
-
 // Posts from the student's connections plus their own, newest first.
 export async function getConnectionPosts() {
-  const connected = await getConnectedIds()
-  const liked = read(KEYS.liked)
-  const comments = [...mockComments, ...read(KEYS.myComments)]
-  const opportunities = await getOpportunities()
-  const demoPosts = mockConnectionPosts
-    .filter((post) => connected.includes(post.author.id))
-    .map((post) => withRealOpportunity(post, opportunities))
-  return [...read(KEYS.myPosts), ...demoPosts]
-    .map((post) => {
-      const likedByMe = liked.includes(post.id)
-      return {
-        ...post,
-        likedByMe,
-        likeCount: post.likeCount + (likedByMe ? 1 : 0),
-        commentCount: comments.filter((c) => c.postId === post.id).length,
-      }
-    })
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  const myId = await getUserId()
+  if (!myId) return []
+  const rows = unwrap(
+    await supabase.from("feed_posts").select(POST_COLUMNS).order("created_at", { ascending: false }).limit(FEED_LIMIT)
+  )
+  return rows.map((row) => toPost(row, myId))
 }
 
-// Creates a post by the logged-in student. `opportunityId` is optional (null for none).
-// Returns the new post.
-export async function createPost({ text, opportunityId = null }) {
-  const post = {
-    id: newId("my-post"),
-    author: await currentAuthor(),
-    type: "update",
-    text,
-    opportunityId,
-    createdAt: new Date().toISOString(),
-    likeCount: 0,
-  }
-  write(KEYS.myPosts, [post, ...read(KEYS.myPosts)])
-  return { ...post, likedByMe: false, commentCount: 0 }
+// Creates a post by the signed-in student. `opportunityId` is optional (null for none).
+// `type` is "update" (default), "recommended" or "looking_for_team". Returns the new post.
+export async function createPost({ text, opportunityId = null, type = "update" }) {
+  const myId = await requireUserId()
+  const { id } = unwrap(
+    await supabase
+      .from("posts")
+      .insert({
+        author_id: myId,
+        type: POST_TYPES.includes(type) ? type : "update",
+        text,
+        opportunity_id: opportunityId,
+      })
+      .select("id")
+      .single()
+  )
+  const row = unwrap(await supabase.from("feed_posts").select(POST_COLUMNS).eq("id", id).single())
+  return toPost(row, myId)
 }
 
-// Deletes one of the logged-in student's own posts (and its comments).
+// Deletes one of the signed-in student's own posts (its comments and likes go too).
 export async function deletePost(postId) {
-  write(KEYS.myPosts, read(KEYS.myPosts).filter((post) => post.id !== postId))
-  write(KEYS.myComments, read(KEYS.myComments).filter((comment) => comment.postId !== postId))
+  const myId = await requireUserId()
+  unwrap(await supabase.from("posts").delete().eq("id", postId).eq("author_id", myId))
 }
 
 // Likes the post if it is not liked yet, otherwise removes the like.
 export async function toggleLike(postId) {
-  const liked = read(KEYS.liked)
-  write(KEYS.liked, liked.includes(postId) ? liked.filter((id) => id !== postId) : [...liked, postId])
+  const myId = await requireUserId()
+  const existing = unwrap(
+    await supabase.from("post_likes").select("post_id").eq("post_id", postId).eq("user_id", myId).maybeSingle()
+  )
+  if (existing) {
+    unwrap(await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", myId))
+  } else {
+    const { error } = await supabase.from("post_likes").insert({ post_id: postId, user_id: myId })
+    if (error && error.code !== "23505") throw new Error(error.message) // 23505: already liked
+  }
 }
 
 // ---- Comments --------------------------------------------------------------
 
 // All comments and replies on a post, oldest first.
 export async function getComments(postId) {
-  return [...mockComments, ...read(KEYS.myComments)]
-    .filter((comment) => comment.postId === postId)
-    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+  const myId = await getUserId()
+  if (!myId) return []
+  const rows = unwrap(
+    await supabase.from("post_comments").select(COMMENT_COLUMNS).eq("post_id", postId).order("created_at", { ascending: true })
+  )
+  return rows.map((row) => toComment(row, myId))
 }
 
 // Adds a comment (parentId null) or a reply (parentId = the comment's id). Returns the new comment.
 export async function addComment({ postId, parentId = null, text }) {
-  const comment = {
-    id: newId("my-comment"),
-    postId,
-    parentId,
-    author: await currentAuthor(),
-    text,
-    createdAt: new Date().toISOString(),
-  }
-  write(KEYS.myComments, [...read(KEYS.myComments), comment])
-  return comment
+  const myId = await requireUserId()
+  const { id } = unwrap(
+    await supabase
+      .from("comments")
+      .insert({ post_id: postId, parent_id: parentId, author_id: myId, text })
+      .select("id")
+      .single()
+  )
+  const row = unwrap(await supabase.from("post_comments").select(COMMENT_COLUMNS).eq("id", id).single())
+  return toComment(row, myId)
 }
 
-// Deletes one of the logged-in student's own comments. Replies to it go too.
+// Deletes one of the signed-in student's own comments. Replies to it go too.
 export async function deleteComment(commentId) {
-  write(
-    KEYS.myComments,
-    read(KEYS.myComments).filter((comment) => comment.id !== commentId && comment.parentId !== commentId)
-  )
+  const myId = await requireUserId()
+  unwrap(await supabase.from("comments").delete().eq("id", commentId).eq("author_id", myId))
 }

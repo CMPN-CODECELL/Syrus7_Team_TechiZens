@@ -3,13 +3,12 @@ import RequestButton from "@/components/RequestButton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { personInitials } from "@/lib/format"
-import { yearLabel } from "@/lib/scoring"
+import { personDetails, personInitials } from "@/lib/format"
 
 // One person in a ranked list (leader's candidates, or connect mode). `item` comes from the
 // matching functions: { person, score, reason, status, contact }.
-export default function SquadMatchRow({ item, actionLabel, doneLabel, disabled, onSend, onWithdraw }) {
-  const { person, score, reason, status, contact } = item
+export default function SquadMatchRow({ item, actionLabel, doneLabel, disabled, onSend, onWithdraw, onAccept, onDecline }) {
+  const { person, score, reason, status, contact, requestId } = item
 
   return (
     <Card size="sm">
@@ -23,7 +22,7 @@ export default function SquadMatchRow({ item, actionLabel, doneLabel, disabled, 
               {person.name}
             </PersonLink>
             <p className="truncate text-xs text-muted-foreground">
-              {person.college} · {yearLabel(person.year)}
+              {personDetails(person)}
             </p>
           </div>
           {score > 0 && (
@@ -38,10 +37,15 @@ export default function SquadMatchRow({ item, actionLabel, doneLabel, disabled, 
             disabled={disabled}
             onSend={() => onSend(person.id)}
             onWithdraw={() => onWithdraw(person.id)}
+            onAccept={() => onAccept(requestId)}
+            onDecline={() => onDecline(requestId)}
           />
         </div>
 
-        <p className="text-xs text-muted-foreground">{reason}</p>
+        <p className="text-xs text-muted-foreground">
+          {status === "incoming" ? "Asked you first. " : ""}
+          {reason}
+        </p>
 
         {/* Shown only after both sides agreed */}
         {contact && (

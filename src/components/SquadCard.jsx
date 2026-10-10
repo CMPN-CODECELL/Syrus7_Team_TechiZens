@@ -3,13 +3,13 @@ import RequestButton from "@/components/RequestButton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { personInitials } from "@/lib/format"
-import { overlap, yearLabel } from "@/lib/scoring"
+import { personDetails, personInitials } from "@/lib/format"
+import { overlap } from "@/lib/scoring"
 
 // One squad with a free spot (shown to a solo seeker). `squad` comes from rankSquads:
 // { leader, members, capacity, lookingForSkills, hoursPerWeek, score, reason, status, contact }.
-export default function SquadCard({ squad, mySkills, disabled, onSend, onWithdraw }) {
-  const { leader, members, capacity, lookingForSkills, score, reason, status, contact } = squad
+export default function SquadCard({ squad, mySkills, disabled, onSend, onWithdraw, onAccept, onDecline }) {
+  const { leader, members, capacity, lookingForSkills, score, reason, status, contact, requestId } = squad
   const have = overlap(lookingForSkills, mySkills).map((skill) => skill.toLowerCase())
   const spots = capacity - members.length
 
@@ -28,7 +28,7 @@ export default function SquadCard({ squad, mySkills, disabled, onSend, onWithdra
               <span className="text-muted-foreground">'s squad</span>
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              {leader.college} · {yearLabel(leader.year)}
+              {personDetails(leader)}
             </p>
           </div>
           <Badge variant="outline" className="shrink-0 tabular-nums" title="How well it fits you">
@@ -41,12 +41,15 @@ export default function SquadCard({ squad, mySkills, disabled, onSend, onWithdra
             disabled={disabled}
             onSend={() => onSend(leader.id)}
             onWithdraw={() => onWithdraw(leader.id)}
+            onAccept={() => onAccept(requestId)}
+            onDecline={() => onDecline(requestId)}
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <span className="text-muted-foreground">
-            {members.length}/{capacity} members{spots > 0 ? ` · ${spots} ${spots === 1 ? "spot" : "spots"} left` : ""} · Looking for:
+            {members.length}/{capacity} members{spots > 0 ? ` · ${spots} ${spots === 1 ? "spot" : "spots"} left` : ""}
+            {lookingForSkills.length > 0 ? " · Looking for:" : " · No specific skills asked for"}
           </span>
           {lookingForSkills.map((skill) => (
             <Badge key={skill} variant={have.includes(skill.toLowerCase()) ? "default" : "outline"}>
@@ -55,7 +58,10 @@ export default function SquadCard({ squad, mySkills, disabled, onSend, onWithdra
           ))}
         </div>
 
-        <p className="text-xs text-muted-foreground">{reason}</p>
+        <p className="text-xs text-muted-foreground">
+          {status === "incoming" ? "Invited you to join. " : ""}
+          {reason}
+        </p>
 
         {contact && (
           <p className="rounded-lg bg-muted px-3 py-2 text-xs">

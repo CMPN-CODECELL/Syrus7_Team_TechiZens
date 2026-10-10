@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useUser } from "@/context/user-context"
-import { formatDate, formatTimeAgo, personInitials } from "@/lib/format"
+import { formatDate, formatTimeAgo, personDetails, personInitials } from "@/lib/format"
 import { yearLabel } from "@/lib/scoring"
 
 // A section with a small title.
@@ -64,16 +64,24 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
   const { user } = useUser()
   const [data, setData] = useState(null) // null = still loading
   const [confirmingRemove, setConfirmingRemove] = useState(false)
+  const [actionError, setActionError] = useState("")
   const [now] = useState(() => Date.now())
 
   useEffect(() => {
-    fetchProfile(personId).then(setData)
+    fetchProfile(personId)
+      .then(setData)
+      .catch(() => setData({ person: null, posts: [], opportunities: [] }))
   }, [personId])
 
   // Runs an action (connect, accept, ...) and then reloads the profile.
   async function act(action) {
     setConfirmingRemove(false)
-    await action()
+    setActionError("")
+    try {
+      await action()
+    } catch (failure) {
+      setActionError(failure.message || "Something went wrong. Please try again.")
+    }
     setData(await fetchProfile(personId))
   }
 
@@ -114,14 +122,14 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
             </Avatar>
             <div className="min-w-0 flex-1 space-y-1">
               <h1 className="text-2xl font-semibold tracking-tight">{person.name}</h1>
-              <p className="text-sm">{person.headline}</p>
+              {person.headline && <p className="text-sm">{person.headline}</p>}
               <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-                <span>
-                  {person.college} · {yearLabel(person.year)}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <MapPin className="size-3.5" /> {person.location}
-                </span>
+                <span>{personDetails(person)}</span>
+                {person.location && (
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="size-3.5" /> {person.location}
+                  </span>
+                )}
               </p>
               <p className="text-sm text-muted-foreground">
                 {person.connectionCount} connections
@@ -130,6 +138,12 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
               </p>
             </div>
           </div>
+
+          {actionError && (
+            <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {actionError}
+            </p>
+          )}
 
           {/* Actions depend on how you and this person are related */}
           <div className="flex flex-wrap items-center gap-2">
@@ -177,23 +191,32 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
         </CardContent>
       </Card>
 
-      <Section title="About">
-        <p className="text-sm">{person.about}</p>
-      </Section>
+      {person.about && (
+        <Section title="About">
+          <p className="text-sm break-words whitespace-pre-wrap">{person.about}</p>
+        </Section>
+      )}
 
-      <Section title="Interests">
-        <TagList tags={person.interests} mine={user.profile.interests} />
-      </Section>
+      {person.interests.length > 0 && (
+        <Section title="Interests">
+          <TagList tags={person.interests} mine={user.profile.interests} />
+        </Section>
+      )}
 
-      <Section title="Skills">
-        <TagList tags={person.skills} mine={user.profile.skills} />
-        <p className="text-xs text-muted-foreground">Filled in means you have it too.</p>
-      </Section>
+      {person.skills.length > 0 && (
+        <Section title="Skills">
+          <TagList tags={person.skills} mine={user.profile.skills} />
+          <p className="text-xs text-muted-foreground">Filled in means you have it too.</p>
+        </Section>
+      )}
 
       <Section title="Education">
         <p className="text-sm">
           {person.college}
-          <span className="text-muted-foreground"> · {yearLabel(person.year)}</span>
+          <span className="text-muted-foreground">
+            {person.college ? " · " : ""}
+            {yearLabel(person.year)}
+          </span>
         </p>
       </Section>
 
@@ -209,7 +232,7 @@ export default function PersonProfilePage({ personId, onBack, onOpen }) {
                   <PersonLink personId={mutual.id} className="block max-w-full truncate text-sm font-medium">
                     {mutual.name}
                   </PersonLink>
-                  <p className="truncate text-xs text-muted-foreground">{mutual.college}</p>
+                  <p className="truncate text-xs text-muted-foreground">{personDetails(mutual)}</p>
                 </div>
               </div>
             ))}
