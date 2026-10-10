@@ -4,6 +4,7 @@ export const SOURCES = {
   devpost: { name: "Devpost", domain: "devpost.com" },
   unstop: { name: "Unstop", domain: "unstop.com" },
   hackerearth: { name: "HackerEarth", domain: "hackerearth.com" },
+  mlh: { name: "Major League Hacking", domain: "mlh.io" },
 }
 
 // { name, domain, icon } for an opportunity's source, or null when it has none (or an unknown one).

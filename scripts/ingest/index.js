@@ -14,9 +14,11 @@ import { createClient } from "@supabase/supabase-js"
 import { fetchDevpost } from "./sources/devpost.js"
 import { fetchUnstop } from "./sources/unstop.js"
 import { fetchHackerEarth } from "./sources/hackerearth.js"
+import { fetchMlh } from "./sources/mlh.js"
 import { normalizeDevpost, findMissingDetails } from "./normalize.js"
 import { normalizeUnstop } from "./normalizeUnstop.js"
 import { normalizeHackerEarth } from "./normalizeHackerEarth.js"
+import { normalizeMlh } from "./normalizeMlh.js"
 import { mergeDuplicates } from "./dedupe.js"
 import { saveAll } from "./save.js"
 
@@ -39,6 +41,7 @@ const SOURCES = [
   { name: "Devpost", fetch: fetchDevpost, normalize: normalizeDevpost },
   { name: "Unstop", fetch: fetchUnstop, normalize: normalizeUnstop },
   { name: "HackerEarth", fetch: fetchHackerEarth, normalize: normalizeHackerEarth },
+  { name: "MLH", fetch: fetchMlh, normalize: normalizeMlh },
 ]
 
 async function main() {
