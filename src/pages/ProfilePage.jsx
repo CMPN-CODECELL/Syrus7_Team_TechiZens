@@ -1,4 +1,7 @@
+import { useState } from "react"
+import { Check } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -11,31 +14,65 @@ import { ABOUT_MAX_LENGTH, HEADLINE_MAX_LENGTH, INTEREST_OPTIONS, SKILL_SUGGESTI
 import { personInitials } from "@/lib/format"
 import { YEAR_OPTIONS, yearLabel } from "@/lib/scoring"
 
+const NAME_MAX_LENGTH = 60
 
-// Changes are saved immediately and shared with the rest of the app through UserProvider.
-export default function ProfilePage() {
-  const { user, updateProfile } = useUser()
+// Everything on this page that can be edited, in one object (older saved profiles may lack headline/about).
+function snapshotOf(user) {
   const { profile } = user
-  // Older saved profiles do not have these two fields yet.
-  const headline = profile.headline ?? ""
-  const about = profile.about ?? ""
+  return {
+    name: user.name,
+    headline: profile.headline ?? "",
+    about: profile.about ?? "",
+    interests: profile.interests,
+    skills: profile.skills,
+    isBeginner: profile.isBeginner,
+    year: profile.year,
+    location: profile.location,
+  }
+}
+
+// Edits are kept as a draft on this page and only saved (and shared with the rest of the app, which re-ranks
+// your feed) when you press "Save changes".
+export default function ProfilePage() {
+  const { user, saveProfile } = useUser()
+  const [draft, setDraft] = useState(() => snapshotOf(user))
+  const [status, setStatus] = useState("idle") // idle | saving | saved | error
+
+  const dirty = JSON.stringify(draft) !== JSON.stringify(snapshotOf(user))
+  const nameMissing = draft.name.trim() === ""
+
+  function change(changes) {
+    setDraft((current) => ({ ...current, ...changes }))
+    setStatus("idle")
+  }
+
+  async function save() {
+    if (nameMissing) return
+    const toSave = { ...draft, name: draft.name.trim() }
+    setStatus("saving")
+    const ok = await saveProfile(toSave)
+    setDraft(toSave)
+    setStatus(ok ? "saved" : "error")
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      {/* How you appear: the same layout as other students' profiles */}
+      {/* How you appear: the same layout as other students' profiles (shows your edits as you type) */}
       <Card>
         <CardContent className="flex items-start gap-4">
           <Avatar className="size-20">
-            <AvatarFallback className="text-2xl">{personInitials(user.name)}</AvatarFallback>
+            <AvatarFallback className="text-2xl">{personInitials(draft.name || user.name)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1 space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">{user.name}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight break-words">
+              {draft.name.trim() || <span className="text-muted-foreground">Add your name below</span>}
+            </h1>
             <p className="text-sm break-words">
-              {headline || <span className="text-muted-foreground">Add a headline below</span>}
+              {draft.headline || <span className="text-muted-foreground">Add a headline below</span>}
             </p>
             <p className="text-sm text-muted-foreground">
-              {yearLabel(profile.year)}
-              {profile.location && ` · ${profile.location}`}
+              {yearLabel(draft.year)}
+              {draft.location && ` · ${draft.location}`}
             </p>
             <p className="text-xs text-muted-foreground">{user.email}</p>
           </div>
@@ -48,16 +85,33 @@ export default function ProfilePage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
+            <Label htmlFor="name">Display name</Label>
+            <Input
+              id="name"
+              value={draft.name}
+              maxLength={NAME_MAX_LENGTH}
+              placeholder="Your name"
+              aria-invalid={nameMissing}
+              onChange={(event) => change({ name: event.target.value })}
+            />
+            {nameMissing ? (
+              <p className="text-xs text-destructive">Your name can't be empty.</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">This is the name other students see.</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="headline">Headline</Label>
             <Input
               id="headline"
-              value={headline}
+              value={draft.headline}
               maxLength={HEADLINE_MAX_LENGTH}
               placeholder="e.g. Second-year student exploring web development"
-              onChange={(event) => updateProfile({ headline: event.target.value })}
+              onChange={(event) => change({ headline: event.target.value })}
             />
             <p className="text-right text-xs text-muted-foreground">
-              {headline.length}/{HEADLINE_MAX_LENGTH}
+              {draft.headline.length}/{HEADLINE_MAX_LENGTH}
             </p>
           </div>
 
@@ -65,14 +119,14 @@ export default function ProfilePage() {
             <Label htmlFor="about">About</Label>
             <Textarea
               id="about"
-              value={about}
+              value={draft.about}
               maxLength={ABOUT_MAX_LENGTH}
               rows={4}
               placeholder="Tell your connections a little about yourself"
-              onChange={(event) => updateProfile({ about: event.target.value })}
+              onChange={(event) => change({ about: event.target.value })}
             />
             <p className="text-right text-xs text-muted-foreground">
-              {about.length}/{ABOUT_MAX_LENGTH}
+              {draft.about.length}/{ABOUT_MAX_LENGTH}
             </p>
           </div>
 
@@ -89,10 +143,10 @@ export default function ProfilePage() {
         <CardContent>
           <TagPicker
             label="Interests"
-            selected={profile.interests}
+            selected={draft.interests}
             suggestions={INTEREST_OPTIONS}
             collapsedCount={16}
-            onChange={(interests) => updateProfile({ interests })}
+            onChange={(interests) => change({ interests })}
           />
         </CardContent>
       </Card>
@@ -102,16 +156,13 @@ export default function ProfilePage() {
           <CardTitle>Skills</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <BeginnerToggle
-            value={profile.isBeginner}
-            onChange={(isBeginner) => updateProfile({ isBeginner })}
-          />
+          <BeginnerToggle value={draft.isBeginner} onChange={(isBeginner) => change({ isBeginner })} />
           <TagPicker
             label="Skills"
-            selected={profile.skills}
+            selected={draft.skills}
             suggestions={SKILL_SUGGESTIONS}
             collapsedCount={16}
-            onChange={(skills) => updateProfile({ skills })}
+            onChange={(skills) => change({ skills })}
           />
         </CardContent>
       </Card>
@@ -125,8 +176,8 @@ export default function ProfilePage() {
             <Label htmlFor="year">Year of study</Label>
             <select
               id="year"
-              value={profile.year}
-              onChange={(event) => updateProfile({ year: Number(event.target.value) })}
+              value={draft.year}
+              onChange={(event) => change({ year: Number(event.target.value) })}
               className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             >
               {YEAR_OPTIONS.map((option) => (
@@ -139,14 +190,30 @@ export default function ProfilePage() {
 
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
-            <LocationPicker
-              id="location"
-              value={profile.location}
-              onChange={(location) => updateProfile({ location })}
-            />
+            <LocationPicker id="location" value={draft.location} onChange={(location) => change({ location })} />
           </div>
         </CardContent>
       </Card>
+
+      {/* Stays at the bottom of the screen so Save is always in reach */}
+      <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-xl border bg-background/95 p-3 shadow-sm backdrop-blur">
+        <p className="text-sm" role="status" aria-live="polite">
+          {status === "error" ? (
+            <span className="text-destructive">Couldn't save. Check your connection and try again.</span>
+          ) : status === "saved" && !dirty ? (
+            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+              <Check className="size-4" /> All changes saved
+            </span>
+          ) : dirty ? (
+            <span>You have unsaved changes</span>
+          ) : (
+            <span className="text-muted-foreground">No changes to save</span>
+          )}
+        </p>
+        <Button onClick={save} disabled={(!dirty && status !== "error") || nameMissing || status === "saving"}>
+          {status === "saving" ? "Saving..." : "Save changes"}
+        </Button>
+      </div>
     </div>
   )
 }

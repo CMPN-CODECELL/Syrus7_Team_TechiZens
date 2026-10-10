@@ -68,7 +68,8 @@ what it would save; saves nothing and needs no key).
    opt-in). When a team is full, **Copy Roster** appears. Events without teams use the lightweight **Connect** mode.
 7. **Connections.** A LinkedIn-style feed from your connections: post, attach an opportunity, like, comment, reply;
    *People you may know*, invitations, and student profiles. No contact details are ever shown here.
-8. **Profile.** Edit your headline, About, interests, skills and location; the feed re-ranks.
+8. **Profile.** Edit your **display name**, headline, About, interests, skills and location, then press **Save changes**
+   (the bar at the bottom shows whether you have unsaved changes). After saving, the feed re-ranks.
 
 **About the alerts page.** Change Sentinel reads alerts from the database for a *signed-in Google* account (with the demo
 login fallback the Alerts page is empty). When ingestion changes a listing's deadline, a database trigger writes an alert

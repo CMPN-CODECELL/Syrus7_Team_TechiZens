@@ -62,6 +62,7 @@ export function UserProvider({ children }) {
     latestUser.current = next
     const saved = await saveUser(next)
     if (latestUser.current === next) setSaveError(!saved)
+    return saved
   }
 
   // Updates the screen straight away, then saves in the background.
@@ -69,6 +70,14 @@ export function UserProvider({ children }) {
     const next = { ...user, profile: { ...user.profile, ...changes } }
     setUser(next)
     persist(next)
+  }
+
+  // The Profile page's Save button: saves the display name and the profile fields together.
+  // Returns true when it was saved (the page shows its own message if not).
+  function saveProfile({ name, ...profileChanges }) {
+    const next = { ...user, name: name ?? user.name, profile: { ...user.profile, ...profileChanges } }
+    setUser(next)
+    return persist(next)
   }
 
   // Called when the step-by-step profile setup is finished.
@@ -84,7 +93,7 @@ export function UserProvider({ children }) {
   }
 
   return (
-    <UserContext.Provider value={{ user, loading, saveError, retrySave, signIn, signOut, updateProfile, completeOnboarding }}>
+    <UserContext.Provider value={{ user, loading, saveError, retrySave, signIn, signOut, updateProfile, saveProfile, completeOnboarding }}>
       {children}
     </UserContext.Provider>
   )
